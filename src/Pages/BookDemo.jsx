@@ -341,18 +341,53 @@ const BookDemo = () => {
 
                 {/* Step 3: Book Demo */}
                 {currentStep === 3 && (
-                    <div>
+                    <div className='w-full'>
                         <div className='customise-container items-start flex flex-col ml-12 mt-20'>
                             <h1 className='font-[32px]'>Book Demo</h1>
                             <p className='text-[#727272] text-[24px] font-normal'>Please pick your suitable date and time slot for the demo.</p>
                         </div>
-                        <div className='flex mt-10'>
+                        <div className='flex mt-10 gap-x-10 ml-8'>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DateCalendar disablePast />
-                                <DemoItem label="Available Time Slots">
-                                    <TimePicker defaultValue={dayjs('2022-04-17T15:30')} />
-                                </DemoItem>
+                                <div className="flex justify-center items-center gap-x-10">
+                                    {/* Calendar */}
+                                    <DateCalendar
+                                        disablePast
+                                        className="w-full max-w-lg"
+                                        sx={{
+                                            width: '420px',
+                                            height: '450px',
+                                            '& .MuiPickersDay-root': {
+                                                marginX: '8px', // Increased horizontal spacing for all dates
+                                                '&:hover': {
+                                                    backgroundColor: '#E6F2FF',
+                                                },
+                                            },
+                                            '& .MuiDayCalendar-weekContainer': {
+                                                justifyContent: 'center',
+                                                marginX: '0px',
+                                            },
+                                            '& .MuiPickersDay-root:not(.MuiPickersDay-weekend)': {
+                                                marginX: '12px',
+                                            },
+                                            '& .MuiPickersDay-root.MuiPickersDay-weekend': {
+                                                marginX: '14px',
+                                            },
+                                            '& .Mui-selected': {
+                                                backgroundColor: '#FF0000 !important', // Red selected date
+                                                color: 'white !important',
+                                                '&:hover': {
+                                                    backgroundColor: '#FF3333 !important',
+                                                },
+                                            },
+                                        }}
+                                    />
+                                    <div className="h-[300px] w-[1px] bg-gray-200"></div>
+                                    <DemoItem label="Available Time Slots">
+                                        <TimePicker defaultValue={dayjs('2022-04-17T15:30')} />
+                                    </DemoItem>
+                                </div>
                             </LocalizationProvider>
+
                         </div>
                         <div className='flex flex-col items-start ml-16 mt-24'>
                             <p className='text-[#666666]'>Demo Scheduling</p>
