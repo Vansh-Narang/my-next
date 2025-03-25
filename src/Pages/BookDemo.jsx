@@ -352,9 +352,13 @@ const BookDemo = () => {
                                     {/* Calendar */}
                                     <DateCalendar
                                         disablePast
+                                        // dayOfWeekFormatter={(day) => {
+                                        //     const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+                                        //     return days[day]; 
+                                        // }}
                                         className="w-full max-w-lg"
                                         sx={{
-                                            width: '420px',
+                                            width: '500px',
                                             height: '450px',
                                             '& .MuiPickersDay-root': {
                                                 marginX: '8px', // Increased horizontal spacing for all dates
@@ -364,11 +368,12 @@ const BookDemo = () => {
                                             },
                                             '& .MuiDayCalendar-weekContainer': {
                                                 justifyContent: 'center',
-                                                marginX: '0px',
                                             },
+                                            // Apply extra spacing to regular weekdays
                                             '& .MuiPickersDay-root:not(.MuiPickersDay-weekend)': {
                                                 marginX: '12px',
                                             },
+                                            // Apply more spacing to weekends (Saturday & Sunday)
                                             '& .MuiPickersDay-root.MuiPickersDay-weekend': {
                                                 marginX: '14px',
                                             },
