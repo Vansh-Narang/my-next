@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import "./BookDemo.css"
 import tick from "../assets/Ticks.svg"
 import grdp from "../assets/1.svg"
@@ -10,19 +10,31 @@ import heineken from "../assets/heineken.svg"
 import logo from "../assets/NexaStack.svg"
 import arrow from "../assets/Vector.svg"
 import "../Pages/Button.css"
+import { motion } from 'framer-motion';
+import moment from 'moment';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
-import { DemoItem } from '@mui/x-date-pickers/internals/demo';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import dayjs from 'dayjs';
+// import { DemoItem } from '@mui/x-date-pickers/internals/demo';
+// import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+// import dayjs from 'dayjs';
 import styled from "styled-components";
-import Progress_bar from '../Components/ProgressBar'
+import ProgressBar from '../Components/ProgressBar'
 
 const StyledSpan = styled.span`
   color: red;
 `;
-
+const dept = [
+    { value: "IT", label: "IT" },
+    { value: "Finance", label: "Finance" },
+    { value: "Human Resources", label: "Human Resources" },
+    { value: "Marketing", label: "Marketing" },
+    { value: "Sales", label: "Sales" },
+    { value: "Operations", label: "Operations" },
+    { value: "Research and Development", label: "Research and Development" },
+    { value: "Customer Support", label: "Customer Support" },
+    { value: "Other", label: "Other" },
+]
 const questionsData = [
     { id: 1, text: "Which segment does your company belongs to?", options: ["Startup", "Scale Startup", "SME", "Mid Enterprises", "Large Enterprises", "Public Sector", "Non-Profit Organizations"] },
     { id: 2, text: "How many technical teams will be working with NexaStack?", options: ["0-10", "11-50", "51-100", "More Than 100", "Only Me"] },
@@ -32,13 +44,47 @@ const questionsData = [
     { id: 6, text: "What is your primary use case for NexaStack?", options: ["Agentic AI Development & Deployment", "AI Model Inference & Optimization", "Enterprise AI Operations", "MLOps & Model Lifecycle Management", "AI-Powered Applications & Services", "Others (Please Specify)"] },
     { id: 7, text: "Are there specific AI models you plan to operate using NexaStack?", options: ["LLMs (Large Language Models)", "Vision Models", "Recommendation Systems", "Speech & Audio Models", "Custom AI/ML Models", "Not Sure, Need Guidance"] },
 ];
+const IndustryList = [
+    { value: "Aerospace", label: "Aerospace" },
+    { value: "Agriculture", label: "Agriculture" },
+    { value: "Automotive", label: "Automotive" },
+    { value: "Banking and Finance Sector", label: "Banking and Finance Sector", },
+    { value: "Consumer Goods", label: "Consumer Goods" },
+    { value: "Consumer Technology", label: "Consumer Technology" },
+    { value: "Education", label: "Education" },
+    { value: "Enterprise Technology", label: "Enterprise Technology" },
+    { value: "Financial Services", label: "Financial Services" },
+    { value: "Gaming", label: "Gaming" },
+    { value: "Government", label: "Government" },
+    { value: "Healthcare", label: "Healthcare" },
+    { value: "Hospitality", label: "Hospitality" },
+    { value: "Insurance", label: "Insurance" },
+    { value: "Life Sciences", label: "Life Sciences" },
+    { value: "Manufacturing", label: "Manufacturing" },
+    { value: "Marketing & Advertising", label: "Marketing & Advertising" },
+    { value: "Media", label: "Media" },
+    { value: "Mining", label: "Mining" },
+    { value: "Non-Profit Organization", label: "Non-Profit Organization" },
+    { value: "Oil and Gas", label: "Oil and Gas" },
+    { value: "Power & Utilities", label: "Power & Utilities" },
+    { value: "Professional Services", label: "Professional Services" },
+    { value: "Real Estate and Construction", label: "Real Estate and Construction", },
+    { value: "Retail", label: "Retail" },
+    { value: "Telecommunication", label: "Telecommunication" },
+    { value: "Transportation and Logistics", label: "Transportation and Logistics", },
+    { value: "Travel", label: "Travel" },
+    { value: "Wholesale and Distribution", label: "Wholesale and Distribution", },
+    { value: "Other", label: "Other" },
+];
 
 const BookDemo = () => {
     const [selectedAnswers, setSelectedAnswers] = useState({});
     const [currentStep, setCurrentStep] = useState(1);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [selectedValue, setSelectedValue] = useState('');
+    // const [selectedValue, setSelectedValue] = useState('');
+    const [pendingAnswer, setPendingAnswer] = useState(null);
     const [isLastQuestionAnswered, setIsLastQuestionAnswered] = useState(false);
+    const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -49,24 +95,32 @@ const BookDemo = () => {
     });
     const [formErrors, setFormErrors] = useState({});
 
-    const handleAnswer = (questionId, option) => {
-        setSelectedAnswers((prev) => ({
-            ...prev,
-            [questionId]: option
-        }));
+    const handleAnswer = useCallback((questionId, option) => {
+        setPendingAnswer({ questionId, option });
+        setLoading(false)
 
-        // Move to next question
-        if (currentQuestionIndex < questionsData.length - 1) {
-            setCurrentQuestionIndex(prev => prev + 1);
-        }
-        // If last question is answered, enable next step button
-        else if (currentQuestionIndex === questionsData.length - 1) {
-            setIsLastQuestionAnswered(true);
-        }
-    };
+        setTimeout(() => {
+            setSelectedAnswers((prev) => ({
+                ...prev,
+                [questionId]: option
+            }));
+
+
+            setPendingAnswer(null);
+            setLoading(true)
+
+            if (currentQuestionIndex < questionsData.length - 1) {
+                setCurrentQuestionIndex(prev => prev + 1);
+            }
+
+            else if (currentQuestionIndex === questionsData.length - 1) {
+                setIsLastQuestionAnswered(true);
+            }
+        }, 500);
+    }, [currentQuestionIndex]);
 
     const handleNext = () => {
-        // Proceed to next step only if all questions are answered
+
         if (Object.keys(selectedAnswers).length === questionsData.length) {
             setCurrentStep(prevStep => prevStep + 1);
         }
@@ -78,7 +132,6 @@ const BookDemo = () => {
             [name]: value
         }));
 
-        // Clear error for this field when user starts typing
         if (formErrors[name]) {
             setFormErrors(prev => ({
                 ...prev,
@@ -89,7 +142,8 @@ const BookDemo = () => {
     const validateForm = () => {
         const errors = {};
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        // Check each field for emptiness
+
+
         Object.keys(formData).forEach(key => {
             if (!formData[key].trim()) {
                 errors[key] = 'This field is required';
@@ -104,123 +158,179 @@ const BookDemo = () => {
     };
 
     const handleNextStep = () => {
-        // Validate form before moving to next step
         if (validateForm()) {
             setCurrentStep(3);
         }
     };
+    //     const QuestionWrapper = styled.div`
+    //         opacity: 0;
+    //         transform: translateY(20px);
+    //         transition: opacity 0.5s ease, transform 0.5s ease;
 
-    const handleChange = (event) => {
-        setSelectedValue(event.target.value);
+    //         &.visible {
+    //         opacity: 1;
+    //         transform: translateY(0);
+    //   }
+    // `;
+    // const [timeSlots, setTimeSlots] = useState([
+    //     { time: '9:00 AM', isAvailable: true },
+    //     { time: '9:30 AM', isAvailable: false },
+    //     { time: '10:00 AM', isAvailable: true },
+
+    // ]);
+
+    const [slots, setSlots] = useState([]);
+    const [selectedSlot, setSelectedSlot] = useState(null);
+
+    const intervals = (startString, endString) => {
+        var start = moment(startString, 'hh:mm a');
+        var end = moment(endString, 'hh:mm a');
+        start.minutes(Math.ceil(start.minutes() / 30) * 30);
+
+        var current = moment(start);
+        const timeSlots = [];
+
+        while (current <= end) {
+            timeSlots.push(current.format('hh:mm a'));
+            current.add(30, 'minutes');
+        }
+
+        return timeSlots;
     };
+
+    useEffect(() => {
+        const generatedSlots = intervals('08:00 AM', '08:00 PM');
+        setSlots(generatedSlots);
+    }, []);
+
+    const handleSlotSelection = (time) => {
+        setSelectedSlot(time);
+    };
+    // const duration = 1000; // ms
+    // const delay = 500; // ms
+
+    // const handleChange = (event) => {
+    //     setSelectedValue(event.target.value);
+    // };
 
     const progress = (Object.keys(selectedAnswers).length / questionsData.length) * 100;
 
     return (
-        <div className='w-full flex justify-between mx-auto h-screen font-inter'>
+        <div className='w-full md:flex md:flex-row flex-col justify-between mx-auto h-screen font-inter overflow-x-hidden'>
             <div className='w-full left-container flex flex-col items-start'>
-                <h1 className='heading text-[64px] text-center tracking-[-2.69px] mb-0'>Book your <span>30-minute </span></h1>
-                <h1 className='font-medium mt-[-26px] text-[64px] text-center tracking-[-2.69px] ml-[87px]'>NexaStack demo.</h1>
-                <p className='mt-12 text-[#3E57DA] ml-24 tracking-[0.67px]'>WHAT TO EXPECT:</p>
-                <div className='ml-24 mt-4 space-y-4 flex items-start flex-col'>
-                    <div className='flex items-center gap-x-3'>
-                        <img src={tick} /><p className='text-[#333B52] tracking-[-0.08px]'>Get a personalized demo of NexaStack</p>
+                <h1 className='heading text-[24px] md:text-[64px] text-center md:tracking-[-2.69px] md:mb-0 w-full'>Book your <span>30-minute </span></h1>
+                <h1 className='font-medium md:mt-[-26px] mt-[-10px] ml-[112px] text-[24px] md:text-[64px] text-center md:tracking-[-2.69px] md:ml-[87px]'>NexaStack demo.</h1>
+                <p className='mt-16 text-[#3E57DA] ml-32 md:ml-24 tracking-[0.67px]'>WHAT TO EXPECT:</p>
+                <div className='ml-10 md:ml-24 mt-8 space-y-2 md:space-y-3 flex items-start flex-col'>
+                    <div className='flex items-center gap-x-1 md:gap-x-3'>
+                        <img src={tick} alt='tick' /><p className='text-[#333B52] tracking-[-0.08px]'>Get a personalized demo of NexaStack</p>
                     </div>
-                    <div className='flex items-center gap-x-3 '>
-                        <img src={tick} />  <p className='text-[#333B52] tracking-[-0.08px]'>Learn about pricing for your use case</p>
+                    <div className='flex items-center gap-x-1 md:gap-x-3 '>
+                        <img src={tick} alt='tick' />  <p className='text-[#333B52] tracking-[-0.08px]'>Learn about pricing for your use case</p>
                     </div>
-                    <div className='flex items-center gap-x-3'>
-                        <img src={tick} />
+                    <div className='flex items-center gap-x-1 md:gap-x-3'>
+                        <img src={tick} alt='tick' />
                         <p className='text-[#333B52] tracking-[-0.08px]'>Hear proven customer success stories</p>
                     </div>
                 </div>
-                <div className='flex ml-24 mt-12 gap-x-12'>
-                    <img src={grdp} />
-                    <img src={soc} />
-                    <img src={iso} />
+                <div className='flex flex-col md:flex md:flex-row ml-24 mt-16 md:gap-x-12 gap-y-5 w-full'>
+                    <img src={grdp} alt='grdp' className='w-[170px]' />
+                    <img src={soc} alt='soc' className='w-[170px]' />
+                    <img src={iso} alt='iso' className='w-[220px]' />
                 </div>
-                <div className='ml-24 mt-24'>
+                <div className='ml-10 mt-10 md:ml-24 md:mt-24'>
                     <h3 className='text-[#333B52]'>Trusted by over Top AI companies of all size</h3>
                 </div>
-                <div className='ml-14 mt-4'>
+                <div className='md:ml-14 md:mt-4 mt-10 mb-8'>
                     <div className='grid grid-cols-4 gap-x-10'>
-                        <img src={zoom} />
-                        <img src={reuters} />
-                        <img src={heineken} />
-                        <img src={reuters} />
+                        <img src={zoom} alt='zoom' />
+                        <img src={reuters} alt='reuters' />
+                        <img src={heineken} alt='heineken' />
+                        <img src={reuters} alt='reuters' />
                     </div>
                     <div className='grid grid-cols-4 gap-x-10'>
-                        <img src={zoom} />
-                        <img src={reuters} />
-                        <img src={heineken} />
-                        <img src={reuters} />
+                        <img src={zoom} alt='zoom' />
+                        <img src={reuters} alt='reuters' />
+                        <img src={heineken} alt='heineken' />
+                        <img src={reuters} alt='reuters' />
                     </div>
                 </div>
             </div>
             <div className='right-container w-full'>
-                <div className='logo-right'>
-                    <img src={logo} />
+                <div className='logo-right flex w-full'>
+                    <img src={logo} alt='comapny-logo' className='md:w-[200px] w-[140px] items-center' />
                 </div>
 
-                {/* Step 1: Questions */}
+                {/* Step 1 */}
                 {currentStep === 1 && (
                     <div>
-                        <div className='customise-container items-start flex flex-col ml-12 mt-20'>
-                            <h1 className='font-[32px]'>Customize your 30 minute Demo</h1>
-                            <p className='text-[#727272] text-[24px] font-normal'>Setup your primary focus and customise the demo accordingly.</p>
+                        <div className='customise-container items-start flex flex-col md:mt-20 mt-6'>
+                            <h1 className='md:text-[32px] ml-16 md:ml-12'>Customize your 30 minute Demo</h1>
+                            <p className='text-[#727272] ml-2 md:ml-12 md:text-[24px] font-normal'>Setup your primary focus and customise the demo accordingly.</p>
                         </div>
-                        <div className='w-full'>
-                            <Progress_bar
+                        <div className='w-96 mx-auto md:w-full items-center'>
+                            <ProgressBar
                                 bgcolor="#0066FF"
                                 progress={Math.round(progress)}
                                 height={9}
                             />
                         </div>
                         <div className="w-full mt-14">
-                            {/* Render only the current question */}
                             <div key={questionsData[currentQuestionIndex].id} className="mb-6 flex flex-col">
-                                <h2 className="text-lg font-semibold mb-2 text-start ml-12 text-[22px] text-[#000000]">
+                                <h2 className="text-sm md:text-xl font-semibold mb-2 text-start ml-6 md:ml-12 text-[22px] text-[#000000]">
                                     {questionsData[currentQuestionIndex].text} <StyledSpan>*</StyledSpan>
                                 </h2>
-                                <div className="flex flex-wrap gap-6 gap-y-8 ml-12 my-6 text-[15px]">
+                                <div className="flex flex-wrap gap-5 md:gap-6 md:gap-y-8 mx-4 md:ml-12 my-6 md:text-[15px]">
                                     {questionsData[currentQuestionIndex].options.map((option) => (
-                                        <button
+                                        <motion.div
                                             key={option}
-                                            className={`px-8 py-3 rounded-full border font-normal text-sm ${selectedAnswers[questionsData[currentQuestionIndex].id] === option ? "bg-blue-500 text-white" : "bg-[#F6F6F6]"}`}
-                                            onClick={() => handleAnswer(questionsData[currentQuestionIndex].id, option)}
+                                            initial="hidden"
+                                            animate="visible"
+                                            variants={optionVariants}
+                                            // custom={index}
+                                            className='delay-100 transition duration-150 ease-in-out'
                                         >
-                                            {option}
-                                        </button>
+                                            <button
+                                                className={`px-4 py-2 md:px-8 md:py-3 rounded-full border font-normal text-sm
+                                              ${selectedAnswers[questionsData[currentQuestionIndex].id] === option ? "bg-blue-500 text-white" :
+                                                        pendingAnswer && pendingAnswer.option === option ? "bg-blue-500 text-white" :
+                                                            "bg-[#F6F6F6]"}`}
+                                                onClick={() => handleAnswer(questionsData[currentQuestionIndex].id, option)}
+                                                disabled={pendingAnswer !== null}
+                                            >
+                                                {option}
+                                            </button>
+                                        </motion.div>
                                     ))}
                                 </div>
                             </div>
                         </div>
-                        <div className='text-white flex absolute bottom-12 right-12'>
+                        <div className='text-white flex ml-64 mb-2 md:absolute md:bottom-12 md:right-12'>
                             <button
-                                className={`btn-next flex gap-x-6 items-center font-normal ${currentQuestionIndex === questionsData.length - 1 && isLastQuestionAnswered ? '' : 'opacity-50 cursor-not-allowed'}`}
+                                className={`btn-next flex gap-x-2 md:gap-x-6 items-center font-normal ${currentQuestionIndex === questionsData.length - 1 && isLastQuestionAnswered ? '' : 'opacity-50 cursor-not-allowed'}`}
                                 onClick={handleNext}
                                 disabled={!(currentQuestionIndex === questionsData.length - 1 && isLastQuestionAnswered)}
                             >
-                                Next Step <img src={arrow} />
+                                Next Step <img src={arrow} alt='arrow' />
                             </button>
                         </div>
                     </div>
                 )}
 
-                {/* Step 2: User Information */}
+                {/* Step 2 */}
                 {currentStep === 2 && (
                     <div>
-                        <div className='customise-container items-start flex flex-col ml-12 mt-20'>
-                            <h1 className='font-[32px]'>Your Information</h1>
-                            <p className='text-[#727272] text-[24px] font-normal'>Please provide your information and schedule the demo seamlessly.</p>
+                        <div className='customise-container items-start flex flex-col md:ml-10 mt-6 md:mt-20'>
+                            <h1 className='md:text-[32px] flex mx-auto md:ml-0'>Your Information</h1>
+                            <p className='text-[#727272] -ml-[11px] md:-ml-0 md:w-full md:text-[24px] font-normal'>Please provide your information and schedule the demo seamlessly.</p>
                         </div>
-                        <div className='flex flex-row m-10 w-full space-x-16 mt-10'>
-                            <div className='flex flex-col items-start w-5/12'>
+                        <div className='flex flex-col md:flex-row m-4 md:m-10 w-full space-y-4 md:space-y-0 md:space-x-16 mt-10'>
+                            <div className='flex flex-col items-start w-11/12 md:w-5/12'>
                                 <label>
                                     First Name <StyledSpan>*</StyledSpan>
                                 </label>
                                 <input
-                                    className={`p-2 rounded-lg border w-full mt-2 focus:outline-none ${formErrors.firstName ? 'border-red-500' : 'border-[#465FF166]'}`}
+                                    className={`p-2 md:px-3 rounded-lg border w-full mt-2 focus:outline-none ${formErrors.firstName ? 'border-red-500' : 'border-[#465FF166]'}`}
                                     type="text"
                                     name="firstName"
                                     value={formData.firstName}
@@ -232,12 +342,12 @@ const BookDemo = () => {
                                     <p className='text-red-500 text-sm mt-1'>{formErrors.firstName}</p>
                                 )}
                             </div>
-                            <div className='flex flex-col items-start w-5/12'>
+                            <div className='flex flex-col items-start w-11/12 md:w-5/12'>
                                 <label>
                                     Last Name <StyledSpan>*</StyledSpan>
                                 </label>
                                 <input
-                                    className={`p-2 rounded-lg border w-full mt-2 focus:outline-none ${formErrors.lastName ? 'border-red-500' : 'border-[#465FF166]'}`}
+                                    className={`p-2 md:px-3 rounded-lg border w-full mt-2 focus:outline-none ${formErrors.lastName ? 'border-red-500' : 'border-[#465FF166]'}`}
                                     type="text"
                                     name="lastName"
                                     value={formData.lastName}
@@ -250,13 +360,13 @@ const BookDemo = () => {
                                 )}
                             </div>
                         </div>
-                        <div className='flex flex-row m-10 w-full space-x-16 mt-10'>
-                            <div className='flex flex-col items-start w-5/12'>
+                        <div className='flex flex-col md:flex-row m-4 md:m-10 w-full space-y-4 md:space-y-0 md:space-x-16 md:mt-10'>
+                            <div className='flex flex-col items-start w-11/12 md:w-5/12'>
                                 <label>
                                     Business Email ID <StyledSpan>*</StyledSpan>
                                 </label>
                                 <input
-                                    className={`p-2 rounded-lg border w-full mt-2 focus:outline-none ${formErrors.email ? 'border-red-500' : 'border-[#465FF166]'}`}
+                                    className={`p-2 md:px-3 rounded-lg border w-full mt-2 focus:outline-none ${formErrors.email ? 'border-red-500' : 'border-[#465FF166]'}`}
                                     type="email"
                                     name="email"
                                     value={formData.email}
@@ -268,12 +378,12 @@ const BookDemo = () => {
                                     <p className='text-red-500 text-sm mt-1'>{formErrors.email}</p>
                                 )}
                             </div>
-                            <div className='flex flex-col items-start w-5/12'>
+                            <div className='flex flex-col items-start w-11/12 md:w-5/12'>
                                 <label>
                                     Company Name <StyledSpan>*</StyledSpan>
                                 </label>
                                 <input
-                                    className={`p-2 rounded-lg border w-full mt-2 focus:outline-none ${formErrors.companyName ? 'border-red-500' : 'border-[#465FF166]'}`}
+                                    className={`p-2 md:px-3 rounded-lg border w-full mt-2 focus:outline-none ${formErrors.companyName ? 'border-red-500' : 'border-[#465FF166]'}`}
                                     type="text"
                                     name="companyName"
                                     value={formData.companyName}
@@ -286,70 +396,71 @@ const BookDemo = () => {
                                 )}
                             </div>
                         </div>
-                        <div className='flex flex-col w-11/12 mx-auto gap-y-10 mt-10'>
-                            <div className='flex flex-col items-start'>
+                        <div className='flex flex-col w-11/12 mx-auto gap-y-5 md:gap-y-10 mt-5 md:mt-10'>
+                            <div className='flex flex-col items-start md:ml-1'>
                                 <label>
                                     Industry Belongs To <StyledSpan>*</StyledSpan>
                                 </label>
                                 <select
-                                    className={`p-2 w-full rounded-lg border mt-2 bg-white focus:outline-none ${formErrors.industry ? 'border-red-500' : 'border-[#465FF166]'}`}
+                                    className={`p-2 md:px-3 w-full rounded-lg border mt-2 bg-white focus:outline-none text-black ${formErrors.industry ? 'border-red-500' : 'border-[#465FF166]'}`}
                                     name="industry"
                                     value={formData.industry}
                                     onChange={handleInputChange}
                                 >
-                                    <option value="">Select your Industry type</option>
-                                    <option value="volvo">Volvo</option>
-                                    <option value="saab">Saab</option>
-                                    <option value="fiat">Fiat</option>
-                                    <option value="audi">Audi</option>
+                                    <option value="" className='text-[#9C9AA5]'>Select your Industry type</option>
+                                    {IndustryList.map((ind) => (
+                                        <option key={ind.value} value={ind.value}>
+                                            {ind.label}
+                                        </option>
+                                    ))}
                                 </select>
                                 {formErrors.industry && (
                                     <p className='text-red-500 text-sm mt-1'>{formErrors.industry}</p>
                                 )}
                             </div>
-                            <div className='flex flex-col items-start'>
+                            <div className='flex flex-col items-start md:ml-1'>
                                 <label>
                                     Department / Team <StyledSpan>*</StyledSpan>
                                 </label>
                                 <select
-                                    className={`p-2 w-full rounded-lg border mt-2 bg-white focus:outline-none ${formErrors.department ? 'border-red-500' : 'border-[#465FF166]'}`}
+                                    className={`p-2 md:px-3 w-full rounded-lg border mt-2 bg-white focus:outline-none text-black ${formErrors.department ? 'border-red-500' : 'border-[#465FF166]'}`}
                                     name="department"
                                     value={formData.department}
                                     onChange={handleInputChange}
                                 >
-                                    <option value="">Select your Department/ Team</option>
-                                    <option value="volvo">Volvo</option>
-                                    <option value="saab">Saab</option>
-                                    <option value="fiat">Fiat</option>
-                                    <option value="audi">Audi</option>
+                                    <option value="" className='text-[#9C9AA5]'>Select your department/ team</option>
+                                    {dept.map((dept) => (
+                                        <option key={dept.value} value={dept.value}>
+                                            {dept.label}
+                                        </option>
+                                    ))}
                                 </select>
                                 {formErrors.department && (
                                     <p className='text-red-500 text-sm mt-1'>{formErrors.department}</p>
                                 )}
                             </div>
                         </div>
-                        <div className='text-white flex absolute bottom-12 right-12'>
+                        <div className='text-white flex ml-[248px] mb-2 md:absolute md:bottom-12 md:right-12 mt-6'>
                             <button
                                 className='btn-next flex gap-x-6 items-center font-normal'
                                 onClick={handleNextStep}
                             >
-                                Next Step <img src={arrow} />
+                                Next Step <img src={arrow} alt='arrow' />
                             </button>
                         </div>
                     </div>
                 )}
 
-                {/* Step 3: Book Demo */}
+                {/* Step 3 */}
                 {currentStep === 3 && (
                     <div className='w-full'>
-                        <div className='customise-container items-start flex flex-col ml-12 mt-20'>
-                            <h1 className='font-[32px]'>Book Demo</h1>
-                            <p className='text-[#727272] text-[24px] font-normal'>Please pick your suitable date and time slot for the demo.</p>
+                        <div className='customise-container items-start flex flex-col mt-6 md:mt-20'>
+                            <h1 className='md:text-[32px] flex mx-auto md:ml-12'>Book Demo</h1>
+                            <p className='text-[#727272] md:-ml-[180px] ml-3 md:w-full md:text-[24px] font-normal'>Please pick your suitable date and time slot for the demo.</p>
                         </div>
-                        <div className='flex mt-10 gap-x-10 ml-8'>
+                        <div className='flex mt-10 items-center'>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <div className="flex justify-center items-center gap-x-10">
-                                    {/* Calendar */}
+                                <div className="flex flex-col md:flex-row items-center justify-between w-full mx-auto ml-0 md:ml-16">
                                     <DateCalendar
                                         disablePast
                                         // dayOfWeekFormatter={(day) => {
@@ -361,7 +472,7 @@ const BookDemo = () => {
                                             width: '500px',
                                             height: '450px',
                                             '& .MuiPickersDay-root': {
-                                                marginX: '8px', // Increased horizontal spacing for all dates
+                                                marginX: '8px',
                                                 '&:hover': {
                                                     backgroundColor: '#E6F2FF',
                                                 },
@@ -369,16 +480,14 @@ const BookDemo = () => {
                                             '& .MuiDayCalendar-weekContainer': {
                                                 justifyContent: 'center',
                                             },
-                                            // Apply extra spacing to regular weekdays
                                             '& .MuiPickersDay-root:not(.MuiPickersDay-weekend)': {
                                                 marginX: '12px',
                                             },
-                                            // Apply more spacing to weekends (Saturday & Sunday)
-                                            '& .MuiPickersDay-root.MuiPickersDay-weekend': {
-                                                marginX: '14px',
-                                            },
+                                            // '& .MuiPickersDay-root.MuiPickersDay-weekend': {
+                                            //     marginX: '1px',
+                                            // },
                                             '& .Mui-selected': {
-                                                backgroundColor: '#FF0000 !important', // Red selected date
+                                                backgroundColor: '#FB3F4A !important',
                                                 color: 'white !important',
                                                 '&:hover': {
                                                     backgroundColor: '#FF3333 !important',
@@ -386,21 +495,55 @@ const BookDemo = () => {
                                             },
                                         }}
                                     />
-                                    <div className="h-[300px] w-[1px] bg-gray-200"></div>
-                                    <DemoItem label="Available Time Slots">
-                                        <TimePicker defaultValue={dayjs('2022-04-17T15:30')} />
-                                    </DemoItem>
+                                    <div className="md:h-[400px] w-[2px] bg-gray-100 ml-12 "></div>
+                                    <div className='flex flex-col items-center w-7/12'>
+                                        <div className='w-full max-w-[300px] md:mb-4 flex flex-col'>
+                                            <h2 className='text-3xl font-semibold text-gray-700 mb-7 mt-4 md:mt-0'>
+                                                Available Time Slots
+                                            </h2>
+                                            <div className='overflow-hidden flex items-center mx-auto'>
+                                                <div className='h-[300px] w-[200px] overflow-y-scroll scrollbar-hide'>
+                                                    {slots && slots.length > 0 ? (
+                                                        <div className='space-y-6 p-2'>
+                                                            {slots.map((time, index) => (
+                                                                <button
+                                                                    key={index}
+                                                                    className={`w-full py-3 text-center 
+                                        rounded-xl
+                                        border
+                                        hover:bg-[#093179] 
+                                        hover:text-white 
+                                        transition-colors 
+                                        duration-200 
+                                        ${selectedSlot === time
+                                                                            ? 'bg-[#093179] text-white'
+                                                                            : 'bg-white text-black'}`}
+                                                                    onClick={() => handleSlotSelection(time)}
+                                                                >
+                                                                    {time}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <div className='text-center py-4 text-gray-500'>
+                                                            No time slots available
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </LocalizationProvider>
 
                         </div>
-                        <div className='flex flex-col items-start ml-16 mt-24'>
+                        <div className='flex flex-col items-start ml-12 md:ml-16 mt-10 md:mt-24'>
                             <p className='text-[#666666]'>Demo Scheduling</p>
                             <p>Time Zone : GMT +5:30 India/Asia</p>
                         </div>
-                        <div className='text-white flex absolute bottom-12 right-12'>
-                            <button className='btn-next flex gap-x-6 items-center font-normal'>
-                                Book Demo <img src={arrow} />
+                        <div className='text-white flex ml-[248px] mb-2 md:absolute md:bottom-12 md:right-12 mt-6'>
+                            <button className='btn-next flex gap-x-2 md:gap-x-6 items-center font-normal'>
+                                Book Demo <img src={arrow} alt='arrow' />
                             </button>
                         </div>
                     </div>
@@ -411,3 +554,18 @@ const BookDemo = () => {
 }
 
 export default BookDemo
+
+const optionVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: (index) => ({
+        opacity: 1,
+        x: 0,
+        transition: {
+            type: "tween",
+            ease: "easeOut",
+            duration: 0.4,
+            delay: index * 0.15
+        }
+    })
+
+};
