@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect } from 'react'
 import "./BookDemo.css"
 import tick from "../assets/Ticks.svg"
@@ -17,8 +18,9 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 // import { DemoItem } from '@mui/x-date-pickers/internals/demo';
 // import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-// import dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import styled from "styled-components";
+import { useMediaQuery } from '@mui/material';
 import ProgressBar from '../Components/ProgressBar'
 
 const StyledSpan = styled.span`
@@ -78,13 +80,15 @@ const IndustryList = [
 ];
 
 const BookDemo = () => {
+    const isDesktop = useMediaQuery('(min-width:768px)');
+    const [value, setValue] = React.useState(dayjs('2025-03-27'));
     const [selectedAnswers, setSelectedAnswers] = useState({});
     const [currentStep, setCurrentStep] = useState(1);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     // const [selectedValue, setSelectedValue] = useState('');
     const [pendingAnswer, setPendingAnswer] = useState(null);
     const [isLastQuestionAnswered, setIsLastQuestionAnswered] = useState(false);
-    const [loading, setLoading] = useState(false)
+    // const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -97,7 +101,7 @@ const BookDemo = () => {
 
     const handleAnswer = useCallback((questionId, option) => {
         setPendingAnswer({ questionId, option });
-        setLoading(false)
+        // setLoading(false)
 
         setTimeout(() => {
             setSelectedAnswers((prev) => ({
@@ -107,7 +111,7 @@ const BookDemo = () => {
 
 
             setPendingAnswer(null);
-            setLoading(true)
+            // setLoading(true)
 
             if (currentQuestionIndex < questionsData.length - 1) {
                 setCurrentQuestionIndex(prev => prev + 1);
@@ -162,23 +166,6 @@ const BookDemo = () => {
             setCurrentStep(3);
         }
     };
-    //     const QuestionWrapper = styled.div`
-    //         opacity: 0;
-    //         transform: translateY(20px);
-    //         transition: opacity 0.5s ease, transform 0.5s ease;
-
-    //         &.visible {
-    //         opacity: 1;
-    //         transform: translateY(0);
-    //   }
-    // `;
-    // const [timeSlots, setTimeSlots] = useState([
-    //     { time: '9:00 AM', isAvailable: true },
-    //     { time: '9:30 AM', isAvailable: false },
-    //     { time: '10:00 AM', isAvailable: true },
-
-    // ]);
-
     const [slots, setSlots] = useState([]);
     const [selectedSlot, setSelectedSlot] = useState(null);
 
@@ -197,31 +184,59 @@ const BookDemo = () => {
 
         return timeSlots;
     };
+    const date = new Date();
+    const formattedTime = new Intl.DateTimeFormat('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true
+    }).format(date);
+
+    // console.log(date.getDate()); //27
+    // console.log("Value is",value.$d) //28
+    const val = value.$d;
+    const showDate = val.toDateString()
+    // const month= showDate.toDateString()
+    console.log(showDate)
+    const newDate = val.getDate()
+
+
+    // console.log(newDate) //28
+
 
     useEffect(() => {
-        const generatedSlots = intervals('08:00 AM', '08:00 PM');
-        setSlots(generatedSlots);
-    }, []);
+        const currentTime = moment();
+        const startTime = moment().hour(8).minute(0).second(0); // 8:00 AM today
+        if (date.getDate() === newDate) {
+            // If current time is before 8:00 AM, start from 8:00 AM
+            const effectiveStartTime = currentTime.isBefore(startTime)
+                ? startTime.format('hh:mm a')
+                : currentTime.format('hh:mm a');
+
+            const generatedSlots = intervals(effectiveStartTime, '08:00 PM');
+            setSlots(generatedSlots);
+        }
+        else {
+            // For future dates, always start from 8:00 AM
+            const generatedSlots = intervals('8:00 AM', '08:00 PM');
+            setSlots(generatedSlots);
+        }
+    }, [value]);
+
 
     const handleSlotSelection = (time) => {
         setSelectedSlot(time);
     };
-    // const duration = 1000; // ms
-    // const delay = 500; // ms
-
-    // const handleChange = (event) => {
-    //     setSelectedValue(event.target.value);
-    // };
-
     const progress = (Object.keys(selectedAnswers).length / questionsData.length) * 100;
 
     return (
-        <div className='w-full md:flex md:flex-row flex-col justify-between mx-auto h-screen font-inter overflow-x-hidden'>
+        <div className='w-full md:flex md:flex-col lg:flex-col xl:flex-col 2xl:flex-row flex-col justify-between mx-auto h-screen font-inter overflow-x-hidden'>
             <div className='w-full left-container flex flex-col items-start'>
-                <h1 className='heading text-[24px] md:text-[64px] text-center md:tracking-[-2.69px] md:mb-0 w-full'>Book your <span>30-minute </span></h1>
-                <h1 className='font-medium md:mt-[-26px] mt-[-10px] ml-[112px] text-[24px] md:text-[64px] text-center md:tracking-[-2.69px] md:ml-[87px]'>NexaStack demo.</h1>
-                <p className='mt-16 text-[#3E57DA] ml-32 md:ml-24 tracking-[0.67px]'>WHAT TO EXPECT:</p>
-                <div className='ml-10 md:ml-24 mt-8 space-y-2 md:space-y-3 flex items-start flex-col'>
+                <div className='flex flex-col items-start w-full md:ml-24'>
+                    <h1 className='heading text-[24px] md:text-[64px] text-center md:text-start md:tracking-[-2.69px] md:mb-0 w-full'>Book your <span>30-minute </span></h1>
+                    <h1 className='font-medium md:mt-[-26px] mt-[-10px] text-[24px] md:text-[64px] md:text-start text-center md:tracking-[-2.69px] w-full'>NexaStack demo.</h1>
+                </div>
+                <p className='mt-16 text-[#3E57DA] md:text-start md:ml-24  tracking-[0.67px] w-full'>WHAT TO EXPECT:</p>
+                <div className='md:ml-24 mt-8 space-y-2 md:space-y-3 flex items-center md:items-start flex-col w-full text-[18.5px]'>
                     <div className='flex items-center gap-x-1 md:gap-x-3'>
                         <img src={tick} alt='tick' /><p className='text-[#333B52] tracking-[-0.08px]'>Get a personalized demo of NexaStack</p>
                     </div>
@@ -233,13 +248,13 @@ const BookDemo = () => {
                         <p className='text-[#333B52] tracking-[-0.08px]'>Hear proven customer success stories</p>
                     </div>
                 </div>
-                <div className='flex flex-col md:flex md:flex-row ml-24 mt-16 md:gap-x-12 gap-y-5 w-full'>
+                <div className='flex flex-col md:flex md:flex-row mt-16 md:gap-x-12 gap-y-5 items-center w-full md:items-start md:ml-24'>
                     <img src={grdp} alt='grdp' className='w-[170px]' />
                     <img src={soc} alt='soc' className='w-[170px]' />
                     <img src={iso} alt='iso' className='w-[220px]' />
                 </div>
-                <div className='ml-10 mt-10 md:ml-24 md:mt-24'>
-                    <h3 className='text-[#333B52]'>Trusted by over Top AI companies of all size</h3>
+                <div className='text-center md:text-start mt-10 md:ml-24 md:mt-24 w-full'>
+                    <h3 className='text-[#333B52] text-[18.9px]'>Trusted by over Top AI companies of all size</h3>
                 </div>
                 <div className='md:ml-14 md:mt-4 mt-10 mb-8'>
                     <div className='grid grid-cols-4 gap-x-10'>
@@ -257,16 +272,16 @@ const BookDemo = () => {
                 </div>
             </div>
             <div className='right-container w-full'>
-                <div className='logo-right flex w-full'>
+                <div className='mt-20 flex items-center justify-center md:justify-normal md:ml-14 w-full'>
                     <img src={logo} alt='comapny-logo' className='md:w-[200px] w-[140px] items-center' />
                 </div>
 
                 {/* Step 1 */}
                 {currentStep === 1 && (
-                    <div>
-                        <div className='customise-container items-start flex flex-col md:mt-20 mt-6'>
+                    <div className='w-full'>
+                        <div className='customise-container items-center md:items-start flex flex-col md:mt-20 mt-6 max-w-full'>
                             <h1 className='md:text-[32px] ml-16 md:ml-12'>Customize your 30 minute Demo</h1>
-                            <p className='text-[#727272] ml-2 md:ml-12 md:text-[24px] font-normal'>Setup your primary focus and customise the demo accordingly.</p>
+                            <p className='text-[#727272] ml-2 md:ml-12 md:text-[24px] text-xl font-normal'>Setup your primary focus and customise the demo accordingly.</p>
                         </div>
                         <div className='w-96 mx-auto md:w-full items-center'>
                             <ProgressBar
@@ -276,11 +291,19 @@ const BookDemo = () => {
                             />
                         </div>
                         <div className="w-full mt-14">
-                            <div key={questionsData[currentQuestionIndex].id} className="mb-6 flex flex-col">
-                                <h2 className="text-sm md:text-xl font-semibold mb-2 text-start ml-6 md:ml-12 text-[22px] text-[#000000]">
-                                    {questionsData[currentQuestionIndex].text} <StyledSpan>*</StyledSpan>
-                                </h2>
-                                <div className="flex flex-wrap gap-5 md:gap-6 md:gap-y-8 mx-4 md:ml-12 my-6 md:text-[15px]">
+                            <div key={questionsData[currentQuestionIndex].id} className="mb-6 flex flex-col items-center md:items-start mx-auto">
+                                <motion.div
+                                    // key={id}
+                                    initial="hidden"
+                                    animate="visible"
+                                    variants={optionVariants}
+                                    className='delay-100 transition duration-150 ease-in-out'
+                                >
+                                    <h2 className="text-[16px] md:text-xl font-semibold mb-2 text-center md:text-start md:ml-12 text-[22px] text-[#000000]">
+                                        {questionsData[currentQuestionIndex].text} <StyledSpan>*</StyledSpan>
+                                    </h2>
+                                </motion.div>
+                                <div className="flex flex-wrap gap-4 md:gap-6 md:gap-y-8 justify-center items-center md:justify-normal md:ml-12 my-6 md:text-[15px] max-w-full">
                                     {questionsData[currentQuestionIndex].options.map((option) => (
                                         <motion.div
                                             key={option}
@@ -291,9 +314,9 @@ const BookDemo = () => {
                                             className='delay-100 transition duration-150 ease-in-out'
                                         >
                                             <button
-                                                className={`px-4 py-2 md:px-8 md:py-3 rounded-full border font-normal text-sm
-                                              ${selectedAnswers[questionsData[currentQuestionIndex].id] === option ? "bg-blue-500 text-white" :
-                                                        pendingAnswer && pendingAnswer.option === option ? "bg-blue-500 text-white" :
+                                                className={`px-4 py-2 md:px-8 md:py-3 rounded-full border font-normal text-[14px] md:text-sm
+                                              ${selectedAnswers[questionsData[currentQuestionIndex].id] === option ? "btn-option" :
+                                                        pendingAnswer && pendingAnswer.option === option ? "btn-option" :
                                                             "bg-[#F6F6F6]"}`}
                                                 onClick={() => handleAnswer(questionsData[currentQuestionIndex].id, option)}
                                                 disabled={pendingAnswer !== null}
@@ -305,7 +328,7 @@ const BookDemo = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className='text-white flex ml-64 mb-2 md:absolute md:bottom-12 md:right-12'>
+                        <div className='text-white flex justify-center items-center md:absolute md:right-12 md:bottom-12'>
                             <button
                                 className={`btn-next flex gap-x-2 md:gap-x-6 items-center font-normal ${currentQuestionIndex === questionsData.length - 1 && isLastQuestionAnswered ? '' : 'opacity-50 cursor-not-allowed'}`}
                                 onClick={handleNext}
@@ -319,13 +342,13 @@ const BookDemo = () => {
 
                 {/* Step 2 */}
                 {currentStep === 2 && (
-                    <div>
+                    <div className='flex items-center w-full flex-col md:items-start'>
                         <div className='customise-container items-start flex flex-col md:ml-10 mt-6 md:mt-20'>
                             <h1 className='md:text-[32px] flex mx-auto md:ml-0'>Your Information</h1>
                             <p className='text-[#727272] -ml-[11px] md:-ml-0 md:w-full md:text-[24px] font-normal'>Please provide your information and schedule the demo seamlessly.</p>
                         </div>
-                        <div className='flex flex-col md:flex-row m-4 md:m-10 w-full space-y-4 md:space-y-0 md:space-x-16 mt-10'>
-                            <div className='flex flex-col items-start w-11/12 md:w-5/12'>
+                        <div className='flex flex-col md:flex-row m-0 md:m-10 w-11/12 space-y-4 md:space-y-0 md:space-x-16 mt-10 '>
+                            <div className='flex flex-col items-start w-full md:w-5/12'>
                                 <label>
                                     First Name <StyledSpan>*</StyledSpan>
                                 </label>
@@ -342,7 +365,7 @@ const BookDemo = () => {
                                     <p className='text-red-500 text-sm mt-1'>{formErrors.firstName}</p>
                                 )}
                             </div>
-                            <div className='flex flex-col items-start w-11/12 md:w-5/12'>
+                            <div className='flex flex-col items-start w-full md:w-5/12'>
                                 <label>
                                     Last Name <StyledSpan>*</StyledSpan>
                                 </label>
@@ -360,8 +383,8 @@ const BookDemo = () => {
                                 )}
                             </div>
                         </div>
-                        <div className='flex flex-col md:flex-row m-4 md:m-10 w-full space-y-4 md:space-y-0 md:space-x-16 md:mt-10'>
-                            <div className='flex flex-col items-start w-11/12 md:w-5/12'>
+                        <div className='flex flex-col md:flex-row mt-3 md:m-10 w-11/12 space-y-4 md:space-y-0 md:space-x-16 md:mt-0'>
+                            <div className='flex flex-col items-start w-full md:w-5/12'>
                                 <label>
                                     Business Email ID <StyledSpan>*</StyledSpan>
                                 </label>
@@ -378,7 +401,7 @@ const BookDemo = () => {
                                     <p className='text-red-500 text-sm mt-1'>{formErrors.email}</p>
                                 )}
                             </div>
-                            <div className='flex flex-col items-start w-11/12 md:w-5/12'>
+                            <div className='flex flex-col items-start w-full md:w-5/12'>
                                 <label>
                                     Company Name <StyledSpan>*</StyledSpan>
                                 </label>
@@ -396,13 +419,13 @@ const BookDemo = () => {
                                 )}
                             </div>
                         </div>
-                        <div className='flex flex-col w-11/12 mx-auto gap-y-5 md:gap-y-10 mt-5 md:mt-10'>
-                            <div className='flex flex-col items-start md:ml-1'>
+                        <div className='flex flex-col mx-auto md:w-full w-full gap-y-5 md:m-10 ml-4 md:gap-y-10 mt-5 md:mt-0'>
+                            <div className='flex flex-col items-start w-11/12 md:w-10/12'>
                                 <label>
                                     Industry Belongs To <StyledSpan>*</StyledSpan>
                                 </label>
                                 <select
-                                    className={`p-2 md:px-3 w-full rounded-lg border mt-2 bg-white focus:outline-none text-black ${formErrors.industry ? 'border-red-500' : 'border-[#465FF166]'}`}
+                                    className={`scrollbar-hide p-2 md:px-2 w-full rounded-lg border mt-2 bg-white focus:outline-none text-black ${formErrors.industry ? 'border-red-500' : 'border-[#465FF166]'}`}
                                     name="industry"
                                     value={formData.industry}
                                     onChange={handleInputChange}
@@ -418,12 +441,12 @@ const BookDemo = () => {
                                     <p className='text-red-500 text-sm mt-1'>{formErrors.industry}</p>
                                 )}
                             </div>
-                            <div className='flex flex-col items-start md:ml-1'>
+                            <div className='flex flex-col items-start w-11/12 md:w-10/12'>
                                 <label>
                                     Department / Team <StyledSpan>*</StyledSpan>
                                 </label>
                                 <select
-                                    className={`p-2 md:px-3 w-full rounded-lg border mt-2 bg-white focus:outline-none text-black ${formErrors.department ? 'border-red-500' : 'border-[#465FF166]'}`}
+                                    className={`p-2 md:px-2 w-full rounded-lg border mt-2 bg-white focus:outline-none text-black ${formErrors.department ? 'border-red-500' : 'border-[#465FF166]'}`}
                                     name="department"
                                     value={formData.department}
                                     onChange={handleInputChange}
@@ -456,68 +479,112 @@ const BookDemo = () => {
                     <div className='w-full'>
                         <div className='customise-container items-start flex flex-col mt-6 md:mt-20'>
                             <h1 className='md:text-[32px] flex mx-auto md:ml-12'>Book Demo</h1>
-                            <p className='text-[#727272] md:-ml-[180px] ml-3 md:w-full md:text-[24px] font-normal'>Please pick your suitable date and time slot for the demo.</p>
+                            <p className='text-[#727272] flex md:ml-12 md:w-full md:text-[24px] font-normal mx-auto'>Please pick your suitable date and time slot for the demo.</p>
                         </div>
                         <div className='flex mt-10 items-center'>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                 <div className="flex flex-col md:flex-row items-center justify-between w-full mx-auto ml-0 md:ml-16">
-                                    <DateCalendar
-                                        disablePast
-                                        // dayOfWeekFormatter={(day) => {
-                                        //     const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-                                        //     return days[day]; 
-                                        // }}
-                                        className="w-full max-w-lg"
-                                        sx={{
-                                            width: '500px',
-                                            height: '450px',
-                                            '& .MuiPickersDay-root': {
-                                                marginX: '8px',
-                                                '&:hover': {
-                                                    backgroundColor: '#E6F2FF',
+                                    {isDesktop ? (
+                                        <DateCalendar
+                                            value={value}
+                                            onChange={(newValue) => setValue(newValue)}
+                                            disablePast
+                                            // dayOfWeekFormatter={(day) => {
+                                            //     const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+                                            //     return days[day]; 
+                                            // }}
+                                            className="w-full md:max-w-lg max-w-sm"
+                                            sx={{
+                                                width: '500px',
+                                                height: '450px',
+                                                '& .MuiPickersDay-root': {
+                                                    marginX: '8px',
+                                                    '&:hover': {
+                                                        backgroundColor: '#E6F2FF',
+                                                    },
                                                 },
-                                            },
-                                            '& .MuiDayCalendar-weekContainer': {
-                                                justifyContent: 'center',
-                                            },
-                                            '& .MuiPickersDay-root:not(.MuiPickersDay-weekend)': {
-                                                marginX: '12px',
-                                            },
-                                            // '& .MuiPickersDay-root.MuiPickersDay-weekend': {
-                                            //     marginX: '1px',
-                                            // },
-                                            '& .Mui-selected': {
-                                                backgroundColor: '#FB3F4A !important',
-                                                color: 'white !important',
-                                                '&:hover': {
-                                                    backgroundColor: '#FF3333 !important',
+                                                '& .MuiDayCalendar-weekContainer': {
+                                                    justifyContent: 'center',
                                                 },
-                                            },
-                                        }}
-                                    />
+                                                '& .MuiPickersDay-root:not(.MuiPickersDay-weekend)': {
+                                                    marginX: '12px',
+                                                },
+                                                // '& .MuiPickersDay-root.MuiPickersDay-weekend': {
+                                                //     marginX: '1px',
+                                                // },
+                                                '& .MuiPickersCalendarHeader-label': {
+                                                    fontSize: '18px',
+                                                },
+                                                '& .Mui-selected': {
+                                                    backgroundColor: '#FB3F4A !important',
+                                                    color: 'white !important',
+                                                    '&:hover': {
+                                                        backgroundColor: '#FF3333 !important',
+                                                    },
+                                                },
+                                            }}
+                                        />
+                                    ) : (
+                                        <DateCalendar
+                                            disablePast
+                                            value={value}
+                                            onChange={(newValue) => setValue(newValue)}
+                                            // dayOfWeekFormatter={(day) => {
+                                            //     const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+                                            //     return days[day]; 
+                                            // }}
+                                            className="w-full md:max-w-lg max-w-sm"
+                                            sx={{
+                                                width: '500px',
+                                                height: '450px',
+                                                '& .MuiPickersDay-root': {
+                                                    marginX: '8px',
+                                                    '&:hover': {
+                                                        backgroundColor: '#E6F2FF',
+                                                    },
+                                                },
+                                                '& .MuiDayCalendar-weekContainer': {
+                                                    justifyContent: 'center',
+                                                },
+                                                '& .MuiPickersDay-root:not(.MuiPickersDay-weekend)': {
+                                                    marginX: '2px',
+                                                },
+                                                // '& .MuiPickersDay-root.MuiPickersDay-weekend': {
+                                                //     marginX: '1px',
+                                                // },
+                                                '& .MuiPickersCalendarHeader-label': {
+                                                    fontSize: '24px',
+                                                },
+                                                '& .Mui-selected': {
+                                                    backgroundColor: '#FB3F4A !important',
+                                                    color: 'white !important',
+                                                    '&:hover': {
+                                                        backgroundColor: '#FF3333 !important',
+                                                    },
+                                                },
+                                            }}
+                                        />
+                                    )}
                                     <div className="md:h-[400px] w-[2px] bg-gray-100 ml-12 "></div>
                                     <div className='flex flex-col items-center w-7/12'>
                                         <div className='w-full max-w-[300px] md:mb-4 flex flex-col'>
-                                            <h2 className='text-3xl font-semibold text-gray-700 mb-7 mt-4 md:mt-0'>
+                                            <h2 className='text-[18px] md:text-2xl font-semibold text-gray-700 mb-7 mt-4 md:mt-0'>
                                                 Available Time Slots
                                             </h2>
                                             <div className='overflow-hidden flex items-center mx-auto'>
-                                                <div className='h-[300px] w-[200px] overflow-y-scroll scrollbar-hide'>
+                                                <div className={`${slots && slots.length > 0
+                                                    ? 'h-[300px] w-[200px]'
+                                                    : 'h-[50px] w-[150px]'} 
+                                                    overflow-y-scroll`}>
+
                                                     {slots && slots.length > 0 ? (
                                                         <div className='space-y-6 p-2'>
                                                             {slots.map((time, index) => (
                                                                 <button
                                                                     key={index}
-                                                                    className={`w-full py-3 text-center 
-                                        rounded-xl
-                                        border
-                                        hover:bg-[#093179] 
-                                        hover:text-white 
-                                        transition-colors 
-                                        duration-200 
-                                        ${selectedSlot === time
-                                                                            ? 'bg-[#093179] text-white'
-                                                                            : 'bg-white text-black'}`}
+                                                                    className={`w-full py-3 text-center rounded-xl border hover:bg-[#093179] hover:text-white transition-colors duration-200 ${selectedSlot === time
+                                                                        ? 'bg-[#093179] text-white'
+                                                                        : 'bg-white text-black'}`}
                                                                     onClick={() => handleSlotSelection(time)}
                                                                 >
                                                                     {time}
@@ -539,9 +606,12 @@ const BookDemo = () => {
                         </div>
                         <div className='flex flex-col items-start ml-12 md:ml-16 mt-10 md:mt-24'>
                             <p className='text-[#666666]'>Demo Scheduling</p>
+                            <p className='text-[#333333] font-medium text-[24px]'>{
+                                selectedSlot ? <>{showDate} | {selectedSlot}</> : <>{ }</>
+                            }</p>
                             <p>Time Zone : GMT +5:30 India/Asia</p>
                         </div>
-                        <div className='text-white flex ml-[248px] mb-2 md:absolute md:bottom-12 md:right-12 mt-6'>
+                        <div className='text-white flex mb-2 md:absolute md:bottom-12 md:right-12 mt-6 w-full items-center justify-center md:items-end md:justify-end'>
                             <button className='btn-next flex gap-x-2 md:gap-x-6 items-center font-normal'>
                                 Book Demo <img src={arrow} alt='arrow' />
                             </button>
@@ -556,14 +626,14 @@ const BookDemo = () => {
 export default BookDemo
 
 const optionVariants = {
-    hidden: { opacity: 0, x: -20 },
+    hidden: { opacity: 0 },
     visible: (index) => ({
         opacity: 1,
         x: 0,
         transition: {
             type: "tween",
-            ease: "easeOut",
-            duration: 0.4,
+            ease: "easeInOut",
+            duration: 1.2,
             delay: index * 0.15
         }
     })

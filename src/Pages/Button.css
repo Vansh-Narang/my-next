@@ -1,4 +1,4 @@
-.btn-next{
+.btn-next {
     border-radius: 32.5px;
     color: white;
     padding: 8px 0px;
@@ -7,7 +7,7 @@
     background: linear-gradient(180deg, #4363F8 0%, #2748E1 100%);
 }
 
-.btn-next img{
+.btn-next img {
     /* background:url("../assets/circle.svg"); */
     background-color: #223CB2;
     border-radius: 20px;
