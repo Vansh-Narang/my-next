@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react'
 import "./BookDemo.css"
 import tick from "../assets/Ticks.svg"
@@ -16,8 +15,6 @@ import moment from 'moment';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
-// import { DemoItem } from '@mui/x-date-pickers/internals/demo';
-// import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import dayjs from 'dayjs';
 import styled from "styled-components";
 import { useMediaQuery } from '@mui/material';
@@ -80,15 +77,20 @@ const IndustryList = [
 ];
 
 const BookDemo = () => {
-    const isDesktop = useMediaQuery('(min-width:768px)');
-    const [value, setValue] = React.useState(dayjs('2025-03-27'));
+    const today = new Date();
+    const formattedDate = today.toISOString().substring(0, 10);
+    //  console.log(formattedDate);
+    const isExtraLarge = useMediaQuery('(min-width:1440px)');
+    const isDesktop = useMediaQuery('(min-width:1024px) and (max-width:1430px');
+    const isTablet = useMediaQuery('(min-width:768px) and (max-width:1023px)');
+    const isMobile = useMediaQuery('(max-width:767px)');
+
+    const [value, setValue] = React.useState(dayjs(formattedDate));
     const [selectedAnswers, setSelectedAnswers] = useState({});
-    const [currentStep, setCurrentStep] = useState(1);
+    const [currentStep, setCurrentStep] = useState(3);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    // const [selectedValue, setSelectedValue] = useState('');
     const [pendingAnswer, setPendingAnswer] = useState(null);
     const [isLastQuestionAnswered, setIsLastQuestionAnswered] = useState(false);
-    // const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -101,7 +103,6 @@ const BookDemo = () => {
 
     const handleAnswer = useCallback((questionId, option) => {
         setPendingAnswer({ questionId, option });
-        // setLoading(false)
 
         setTimeout(() => {
             setSelectedAnswers((prev) => ({
@@ -109,14 +110,11 @@ const BookDemo = () => {
                 [questionId]: option
             }));
 
-
             setPendingAnswer(null);
-            // setLoading(true)
 
             if (currentQuestionIndex < questionsData.length - 1) {
                 setCurrentQuestionIndex(prev => prev + 1);
             }
-
             else if (currentQuestionIndex === questionsData.length - 1) {
                 setIsLastQuestionAnswered(true);
             }
@@ -124,11 +122,11 @@ const BookDemo = () => {
     }, [currentQuestionIndex]);
 
     const handleNext = () => {
-
         if (Object.keys(selectedAnswers).length === questionsData.length) {
             setCurrentStep(prevStep => prevStep + 1);
         }
     };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -143,10 +141,10 @@ const BookDemo = () => {
             }));
         }
     };
+
     const validateForm = () => {
         const errors = {};
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 
         Object.keys(formData).forEach(key => {
             if (!formData[key].trim()) {
@@ -166,6 +164,7 @@ const BookDemo = () => {
             setCurrentStep(3);
         }
     };
+
     const [slots, setSlots] = useState([]);
     const [selectedSlot, setSelectedSlot] = useState(null);
 
@@ -184,6 +183,7 @@ const BookDemo = () => {
 
         return timeSlots;
     };
+
     const date = new Date();
     const formattedTime = new Intl.DateTimeFormat('en-US', {
         hour: 'numeric',
@@ -191,131 +191,147 @@ const BookDemo = () => {
         hour12: true
     }).format(date);
 
-    // console.log(date.getDate()); //27
-    // console.log("Value is",value.$d) //28
     const val = value.$d;
-    const showDate = val.toDateString()
-    // const month= showDate.toDateString()
-    console.log(showDate)
-    const newDate = val.getDate()
-
-
-    // console.log(newDate) //28
-
+    const showDate = val.toDateString();
+    const newDate = val.getDate();
 
     useEffect(() => {
-        const currentTime = moment();
-        const startTime = moment().hour(8).minute(0).second(0); // 8:00 AM today
         if (date.getDate() === newDate) {
-            // If current time is before 8:00 AM, start from 8:00 AM
-            const effectiveStartTime = currentTime.isBefore(startTime)
-                ? startTime.format('hh:mm a')
-                : currentTime.format('hh:mm a');
-
-            const generatedSlots = intervals(effectiveStartTime, '08:00 PM');
+            const generatedSlots = intervals(formattedTime, '08:00 PM');
             setSlots(generatedSlots);
         }
         else {
-            // For future dates, always start from 8:00 AM
             const generatedSlots = intervals('8:00 AM', '08:00 PM');
             setSlots(generatedSlots);
         }
-    }, [value]);
-
+    }, [value, newDate]);
 
     const handleSlotSelection = (time) => {
         setSelectedSlot(time);
     };
+
     const progress = (Object.keys(selectedAnswers).length / questionsData.length) * 100;
 
+    const getHeadingClass = () => {
+        if (isMobile) return 'text-2xl sm:text-4xl';
+        if (isTablet) return 'text-4xl md:text-5xl';
+        if (isDesktop) return 'text-4xl md:text-5xl';
+        if (isExtraLarge) return 'text-5xl xl:text-6xl'; // Added for >1440px
+        return 'text-5xl lg:text-6xl';
+    };
+
+    const getSubheadingClass = () => {
+        if (isMobile) return 'text-base sm:text-2xl';
+        if (isTablet) return 'text-2xl md:text-xl';
+        if (isDesktop) return 'text-xl';
+        if (isExtraLarge) return 'text-2xl'; // Added for >1440px
+        return 'text-2xl lg:text-xl';
+    };
+
+    const getParagraphClass = () => {
+        if (isMobile) return 'text-[14px] sm:text-lg';
+        if (isTablet) return 'text-lg md:text-xl';
+        if (isDesktop) return 'text-base';
+        if (isExtraLarge) return 'text-xl'; // Added for >1440px
+        return 'text-xl';
+    };
     return (
-        <div className='w-full md:flex md:flex-col lg:flex-col xl:flex-col 2xl:flex-row flex-col justify-between mx-auto h-screen font-inter overflow-x-hidden'>
-            <div className='w-full left-container flex flex-col items-start'>
-                <div className='flex flex-col items-start w-full md:ml-24'>
-                    <h1 className='heading text-[24px] md:text-[64px] text-center md:text-start md:tracking-[-2.69px] md:mb-0 w-full'>Book your <span>30-minute </span></h1>
-                    <h1 className='font-medium md:mt-[-26px] mt-[-10px] text-[24px] md:text-[64px] md:text-start text-center md:tracking-[-2.69px] w-full'>NexaStack demo.</h1>
+        <div className='w-full md:flex md:flex-col lg:flex-row xl:flex-row 2xl:flex-row flex-col justify-between mx-auto h-screen font-inter overflow-x-hidden'>
+            {/* Left Container */}
+            <div className='w-full lg:w-1/2 left-container flex flex-col items-start'>
+                <div className='flex flex-col items-start w-full md:ml-24 px-4 md:px-0 lg:px-8 lg:ml-0 xl:ml-4'>
+                    <h1 className={`heading ${getHeadingClass()} text-center md:text-start lg:text-start md:tracking-[-2.69px] md:mb-0 lg:mb-0 w-full font-bold`}>
+                        Book your <span>30-minute </span>
+                    </h1>
+                    <h1 className={`font-medium md:mt-[1px] mt-[-10px] ${getHeadingClass()} md:text-start lg:text-start text-center md:tracking-[-2.69px] w-full`}>
+                        NexaStack demo.
+                    </h1>
                 </div>
-                <p className='mt-16 text-[#3E57DA] md:text-start md:ml-24  tracking-[0.67px] w-full'>WHAT TO EXPECT:</p>
-                <div className='md:ml-24 mt-8 space-y-2 md:space-y-3 flex items-center md:items-start flex-col w-full text-[18.5px]'>
-                    <div className='flex items-center gap-x-1 md:gap-x-3'>
-                        <img src={tick} alt='tick' /><p className='text-[#333B52] tracking-[-0.08px]'>Get a personalized demo of NexaStack</p>
+                <p className={`mt-8 md:mt-16 lg:mt-12 text-[#3E57DA] md:text-start lg:text-start md:ml-24 lg:ml-8 px-4 md:px-0 lg:px-0 xl:ml-14 xl:mt-20 tracking-[0.67px] w-full font-semibold ${getParagraphClass()}`}>
+                    WHAT TO EXPECT:
+                </p>
+                <div className={`md:ml-24 lg:ml-8 mt-4 md:mt-8 lg:mt-6 xl:mt-10 xl:ml-14 space-y-2 md:space-y-3 lg:space-y-4 flex items-center md:items-start flex-col w-full ${getParagraphClass()} px-2 md:px-0 lg:px-0`}>
+                    <div className='flex items-center gap-x-1 md:gap-x-3 lg:gap-x-4'>
+                        <img src={tick} alt='tick' className="w-5 md:w-6 lg:w-6" />
+                        <p className='text-[#333B52] tracking-[-0.08px] lg:font-medium'>Get a personalized demo of NexaStack</p>
                     </div>
-                    <div className='flex items-center gap-x-1 md:gap-x-3 '>
-                        <img src={tick} alt='tick' />  <p className='text-[#333B52] tracking-[-0.08px]'>Learn about pricing for your use case</p>
+                    <div className='flex items-center gap-x-1 md:gap-x-3 lg:gap-x-4'>
+                        <img src={tick} alt='tick' className="w-5 md:w-6 lg:w-6" />
+                        <p className='text-[#333B52] tracking-[-0.08px] lg:font-medium'>Learn about pricing for your use case</p>
                     </div>
-                    <div className='flex items-center gap-x-1 md:gap-x-3'>
-                        <img src={tick} alt='tick' />
-                        <p className='text-[#333B52] tracking-[-0.08px]'>Hear proven customer success stories</p>
+                    <div className='flex items-center gap-x-1 md:gap-x-3 lg:gap-x-4'>
+                        <img src={tick} alt='tick' className="w-5 md:w-6 lg:w-6" />
+                        <p className='text-[#333B52] tracking-[-0.08px] lg:font-medium'>Hear proven customer success stories</p>
                     </div>
                 </div>
-                <div className='flex flex-col md:flex md:flex-row mt-16 md:gap-x-12 gap-y-5 items-center w-full md:items-start md:ml-24'>
-                    <img src={grdp} alt='grdp' className='w-[170px]' />
-                    <img src={soc} alt='soc' className='w-[170px]' />
-                    <img src={iso} alt='iso' className='w-[220px]' />
+                <div className='flex flex-col md:flex md:flex-row lg:flex-row mt-8 md:mt-16 lg:mt-12 xl:mt-16 md:gap-x-12 lg:gap-x-2 xl:gap-x-8 gap-y-5 items-center w-full md:items-start lg:items-start md:ml-24 lg:ml-2 xl:ml-14 px-4 md:px-0 lg:px-0'>
+                    <img src={grdp} alt='grdp' className='w-[120px] md:w-[170px] lg:w-[150px] xl:w-[180px]' />
+                    <img src={soc} alt='soc' className='w-[120px] md:w-[170px] lg:w-[150px] xl:w-[180px]' />
+                    <img src={iso} alt='iso' className='w-[160px] md:w-[220px] lg:w-[200px] xl:w-[240px]' />
                 </div>
-                <div className='text-center md:text-start mt-10 md:ml-24 md:mt-24 w-full'>
-                    <h3 className='text-[#333B52] text-[18.9px]'>Trusted by over Top AI companies of all size</h3>
+                <div className='text-center md:text-start lg:text-start mt-8 md:mt-24 lg:mt-16 xl:mt-32 w-full px-4 md:px-0 lg:px-0 md:ml-24 lg:ml-7 xl:ml-16'>
+                    <h3 className={`text-[#333B52] ${getSubheadingClass()}`}>Trusted by over Top AI companies of all sizes</h3>
                 </div>
-                <div className='md:ml-14 md:mt-4 mt-10 mb-8'>
-                    <div className='grid grid-cols-4 gap-x-10'>
-                        <img src={zoom} alt='zoom' />
-                        <img src={reuters} alt='reuters' />
-                        <img src={heineken} alt='heineken' />
-                        <img src={reuters} alt='reuters' />
+                <div className="md:ml-12 lg:ml-0 xl:ml-6 md:mt-4 xl:mt-4 lg:mt-6 mt-8 mb-8 w-full px-4 md:px-0 lg:px-1">
+                    <div className="grid grid-cols-4 gap-4 md:gap-2 lg:gap-4 xl:gap-x-24 md:w-11/12 lg:w-full xl:w-11/12">
+                        <img src={zoom} alt="zoom" className="w-full" />
+                        <img src={reuters} alt="reuters" className="w-full" />
+                        <img src={heineken} alt="heineken" className="w-full" />
+                        <img src={reuters} alt="reuters" className="w-full" />
                     </div>
-                    <div className='grid grid-cols-4 gap-x-10'>
-                        <img src={zoom} alt='zoom' />
-                        <img src={reuters} alt='reuters' />
-                        <img src={heineken} alt='heineken' />
-                        <img src={reuters} alt='reuters' />
+                    <div className="grid grid-cols-4 gap-4 md:gap-2 lg:gap-4 xl:gap-x-24 md:w-11/12 lg:w-full xl:w-11/12 mt-4">
+                        <img src={zoom} alt="zoom" className="w-full" />
+                        <img src={reuters} alt="reuters" className="w-full" />
+                        <img src={heineken} alt="heineken" className="w-full" />
+                        <img src={reuters} alt="reuters" className="w-full" />
                     </div>
                 </div>
             </div>
-            <div className='right-container w-full'>
-                <div className='mt-20 flex items-center justify-center md:justify-normal md:ml-14 w-full'>
-                    <img src={logo} alt='comapny-logo' className='md:w-[200px] w-[140px] items-center' />
+
+            {/* Right Container */}
+            <div className='right-container w-full lg:w-1/2 lg:border-l lg:border-gray-200'>
+                <div className='mt-10 md:mt-20 lg:mt-16 flex items-center justify-center md:justify-normal md:ml-14 lg:ml-8 xl:ml-6 w-full'>
+                    <img src={logo} alt='comapny-logo' className='md:ml-7 lg:ml-4 xl:ml-9 md:w-[200px] lg:w-[180px] w-[140px] items-center' />
                 </div>
 
                 {/* Step 1 */}
                 {currentStep === 1 && (
-                    <div className='w-full'>
-                        <div className='customise-container items-center md:items-start flex flex-col md:mt-20 mt-6 max-w-full'>
-                            <h1 className='md:text-[32px] ml-16 md:ml-12'>Customize your 30 minute Demo</h1>
-                            <p className='text-[#727272] ml-2 md:ml-12 md:text-[24px] text-xl font-normal'>Setup your primary focus and customise the demo accordingly.</p>
+                    <div className='w-full px-4 md:px-0 lg:px-8'>
+                        <div className='customise-container items-center md:items-start lg:items-start flex flex-col md:mt-20 lg:mt-12 mt-6 max-w-full'>
+                            <h1 className={` text-[12px] xl:ml-4 lg:-ml-5 ml-4 md:ml-20 font-semibold`}>Customize your 30 minute Demo</h1>
+                            <p className={`text-[#727272] ml-2 md:ml-20 lg:ml-8 xl:ml-4 ${getParagraphClass()} font-normal mt-2`}>Setup your primary focus and   the demo accordingly.</p>
                         </div>
-                        <div className='w-96 mx-auto md:w-full items-center'>
+                        <div className='w-full mx-auto md:w-full lg:w-11/12 xl:w-full items-center md:ml-16 lg:ml-4 mt-4 xl:ml-0 xl:mt-10'>
                             <ProgressBar
                                 bgcolor="#0066FF"
                                 progress={Math.round(progress)}
                                 height={9}
                             />
                         </div>
-                        <div className="w-full mt-14">
-                            <div key={questionsData[currentQuestionIndex].id} className="mb-6 flex flex-col items-center md:items-start mx-auto">
+                        <div className="w-full mt-8 md:mt-14 lg:mt-10 xl:mt-16 md:ml-8 lg:ml-0">
+                            <div key={questionsData[currentQuestionIndex].id} className="mb-6 flex flex-col items-center md:items-start lg:items-start mx-auto">
                                 <motion.div
-                                    // key={id}
                                     initial="hidden"
                                     animate="visible"
                                     variants={optionVariants}
                                     className='delay-100 transition duration-150 ease-in-out'
                                 >
-                                    <h2 className="text-[16px] md:text-xl font-semibold mb-2 text-center md:text-start md:ml-12 text-[22px] text-[#000000]">
+                                    <h2 className={`text-2xl font-semibold mb-2 text-center md:text-start lg:text-start md:ml-12 lg:ml-4 text-[#000000]`}>
                                         {questionsData[currentQuestionIndex].text} <StyledSpan>*</StyledSpan>
                                     </h2>
                                 </motion.div>
-                                <div className="flex flex-wrap gap-4 md:gap-6 md:gap-y-8 justify-center items-center md:justify-normal md:ml-12 my-6 md:text-[15px] max-w-full">
+                                <div className="flex flex-wrap gap-3 md:gap-6 lg:gap-4 xl:gap-8 justify-center items-center md:justify-normal lg:justify-start md:ml-8 lg:ml-0 xl:ml-2 my-4 md:my-6 lg:my-5 max-w-full">
                                     {questionsData[currentQuestionIndex].options.map((option) => (
                                         <motion.div
                                             key={option}
                                             initial="hidden"
                                             animate="visible"
                                             variants={optionVariants}
-                                            // custom={index}
                                             className='delay-100 transition duration-150 ease-in-out'
                                         >
                                             <button
-                                                className={`px-4 py-2 md:px-8 md:py-3 rounded-full border font-normal text-[14px] md:text-sm
-                                              ${selectedAnswers[questionsData[currentQuestionIndex].id] === option ? "btn-option" :
+                                                className={`px-3 py-2 md:px-8 lg:px-6 md:py-3 lg:py-3 rounded-full border ${getParagraphClass()} 
+                                            ${selectedAnswers[questionsData[currentQuestionIndex].id] === option ? "btn-option" :
                                                         pendingAnswer && pendingAnswer.option === option ? "btn-option" :
                                                             "bg-[#F6F6F6]"}`}
                                                 onClick={() => handleAnswer(questionsData[currentQuestionIndex].id, option)}
@@ -328,13 +344,13 @@ const BookDemo = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className='text-white flex justify-center items-center md:absolute md:right-12 md:bottom-12'>
+                        <div className='mb-4 text-white flex justify-center items-center md:absolute lg:absolute md:right-12 lg:right-12 md:bottom-12 lg:bottom-8 mt-6 md:mt-0 lg:mt-0'>
                             <button
-                                className={`btn-next flex gap-x-2 md:gap-x-6 items-center font-normal ${currentQuestionIndex === questionsData.length - 1 && isLastQuestionAnswered ? '' : 'opacity-50 cursor-not-allowed'}`}
+                                className={`btn-next flex gap-x-2 md:gap-x-6 lg:gap-x-4 items-center font-normal ${currentQuestionIndex === questionsData.length - 1 && isLastQuestionAnswered ? '' : 'opacity-50 cursor-not-allowed'} ${getParagraphClass()}`}
                                 onClick={handleNext}
                                 disabled={!(currentQuestionIndex === questionsData.length - 1 && isLastQuestionAnswered)}
                             >
-                                Next Step <img src={arrow} alt='arrow' />
+                                Next Step <img src={arrow} alt='arrow' className="w-8 md:w-9 lg:w-8 xl:w-9" />
                             </button>
                         </div>
                     </div>
@@ -342,18 +358,18 @@ const BookDemo = () => {
 
                 {/* Step 2 */}
                 {currentStep === 2 && (
-                    <div className='flex items-center w-full flex-col md:items-start'>
-                        <div className='customise-container items-start flex flex-col md:ml-10 mt-6 md:mt-20'>
-                            <h1 className='md:text-[32px] flex mx-auto md:ml-0'>Your Information</h1>
-                            <p className='text-[#727272] -ml-[11px] md:-ml-0 md:w-full md:text-[24px] font-normal'>Please provide your information and schedule the demo seamlessly.</p>
+                    <div className='flex items-center w-full flex-col md:items-start lg:items-start px-4 md:px-0 lg:px-8'>
+                        <div className='customise-container items-start flex flex-col md:ml-10 lg:ml-4 xl:ml-6 mt-6 md:mt-20 lg:mt-12'>
+                            <h1 className={`${getSubheadingClass()} flex mx-auto md:mx-0 lg:mx-0 font-semibold`}>Your Information</h1>
+                            <p className={`text-[#727272] -ml-0 md:-ml-0 lg:ml-0 md:w-full lg:w-full ${getParagraphClass()} font-normal mt-2`}>Please provide your information and schedule the demo seamlessly.</p>
                         </div>
-                        <div className='flex flex-col md:flex-row m-0 md:m-10 w-11/12 space-y-4 md:space-y-0 md:space-x-16 mt-10 '>
-                            <div className='flex flex-col items-start w-full md:w-5/12'>
-                                <label>
+                        <div className='flex flex-col md:flex-row lg:flex-row m-0 md:m-10 lg:m-6 w-11/12 space-y-4 md:space-y-0 lg:space-y-0 md:space-x-16 lg:space-x-8 mt-8 md:mt-10 lg:mt-6 xl:mt-16'>
+                            <div className='flex flex-col items-start w-full md:w-5/12 lg:w-5/12'>
+                                <label className={`${getParagraphClass()} font-medium`}>
                                     First Name <StyledSpan>*</StyledSpan>
                                 </label>
                                 <input
-                                    className={`p-2 md:px-3 rounded-lg border w-full mt-2 focus:outline-none ${formErrors.firstName ? 'border-red-500' : 'border-[#465FF166]'}`}
+                                    className={`p-3 md:px-3 lg:px-3 rounded-lg border w-full mt-2 focus:outline-none ${getParagraphClass()} ${formErrors.firstName ? 'border-red-500' : 'border-[#465FF166]'}`}
                                     type="text"
                                     name="firstName"
                                     value={formData.firstName}
@@ -365,12 +381,12 @@ const BookDemo = () => {
                                     <p className='text-red-500 text-sm mt-1'>{formErrors.firstName}</p>
                                 )}
                             </div>
-                            <div className='flex flex-col items-start w-full md:w-5/12'>
-                                <label>
+                            <div className='flex flex-col items-start w-full md:w-5/12 lg:w-5/12'>
+                                <label className={`${getParagraphClass()} font-medium`}>
                                     Last Name <StyledSpan>*</StyledSpan>
                                 </label>
                                 <input
-                                    className={`p-2 md:px-3 rounded-lg border w-full mt-2 focus:outline-none ${formErrors.lastName ? 'border-red-500' : 'border-[#465FF166]'}`}
+                                    className={`p-3 md:px-3 lg:px-3 rounded-lg border w-full mt-2 focus:outline-none ${getParagraphClass()} ${formErrors.lastName ? 'border-red-500' : 'border-[#465FF166]'}`}
                                     type="text"
                                     name="lastName"
                                     value={formData.lastName}
@@ -383,13 +399,13 @@ const BookDemo = () => {
                                 )}
                             </div>
                         </div>
-                        <div className='flex flex-col md:flex-row mt-3 md:m-10 w-11/12 space-y-4 md:space-y-0 md:space-x-16 md:mt-0'>
-                            <div className='flex flex-col items-start w-full md:w-5/12'>
-                                <label>
+                        <div className='flex flex-col md:flex-row lg:flex-row mt-3 md:m-10 lg:m-6 w-11/12 space-y-4 md:space-y-0 lg:space-y-0 md:space-x-16 lg:space-x-8 md:mt-0 lg:mt-0'>
+                            <div className='flex flex-col items-start w-full md:w-5/12 lg:w-5/12'>
+                                <label className={`${getParagraphClass()} font-medium`}>
                                     Business Email ID <StyledSpan>*</StyledSpan>
                                 </label>
                                 <input
-                                    className={`p-2 md:px-3 rounded-lg border w-full mt-2 focus:outline-none ${formErrors.email ? 'border-red-500' : 'border-[#465FF166]'}`}
+                                    className={`p-3 md:px-3 lg:px-3 rounded-lg border w-full mt-2 focus:outline-none ${getParagraphClass()} ${formErrors.email ? 'border-red-500' : 'border-[#465FF166]'}`}
                                     type="email"
                                     name="email"
                                     value={formData.email}
@@ -401,12 +417,12 @@ const BookDemo = () => {
                                     <p className='text-red-500 text-sm mt-1'>{formErrors.email}</p>
                                 )}
                             </div>
-                            <div className='flex flex-col items-start w-full md:w-5/12'>
-                                <label>
+                            <div className='flex flex-col items-start w-full md:w-5/12 lg:w-5/12'>
+                                <label className={`${getParagraphClass()} font-medium`}>
                                     Company Name <StyledSpan>*</StyledSpan>
                                 </label>
                                 <input
-                                    className={`p-2 md:px-3 rounded-lg border w-full mt-2 focus:outline-none ${formErrors.companyName ? 'border-red-500' : 'border-[#465FF166]'}`}
+                                    className={`p-3 md:px-3 lg:px-3 rounded-lg border w-full mt-2 focus:outline-none ${getParagraphClass()} ${formErrors.companyName ? 'border-red-500' : 'border-[#465FF166]'}`}
                                     type="text"
                                     name="companyName"
                                     value={formData.companyName}
@@ -419,13 +435,13 @@ const BookDemo = () => {
                                 )}
                             </div>
                         </div>
-                        <div className='flex flex-col mx-auto md:w-full w-full gap-y-5 md:m-10 ml-4 md:gap-y-10 mt-5 md:mt-0'>
-                            <div className='flex flex-col items-start w-11/12 md:w-10/12'>
-                                <label>
+                        <div className='flex flex-col w-11/12 gap-y-5 mx-auto md:gap-y-10 lg:gap-y-6 mt-5 md:mt-0 lg:mt-4'>
+                            <div className='flex flex-col items-start w-full md:w-11/12 lg:w-11/12 xl:-ml-5 xl:w-11/12'>
+                                <label className={`${getParagraphClass()} font-medium`}>
                                     Industry Belongs To <StyledSpan>*</StyledSpan>
                                 </label>
                                 <select
-                                    className={`scrollbar-hide p-2 md:px-2 w-full rounded-lg border mt-2 bg-white focus:outline-none text-black ${formErrors.industry ? 'border-red-500' : 'border-[#465FF166]'}`}
+                                    className={`scrollbar-hide p-3 md:px-3 lg:px-3 w-full rounded-lg border mt-2 bg-white focus:outline-none text-black ${getParagraphClass()} ${formErrors.industry ? 'border-red-500' : 'border-[#465FF166]'}`}
                                     name="industry"
                                     value={formData.industry}
                                     onChange={handleInputChange}
@@ -441,12 +457,12 @@ const BookDemo = () => {
                                     <p className='text-red-500 text-sm mt-1'>{formErrors.industry}</p>
                                 )}
                             </div>
-                            <div className='flex flex-col items-start w-11/12 md:w-10/12'>
-                                <label>
+                            <div className='flex flex-col items-start w-full md:w-11/12 lg:w-11/12 xl:-ml-5'>
+                                <label className={`${getParagraphClass()} font-medium`}>
                                     Department / Team <StyledSpan>*</StyledSpan>
                                 </label>
                                 <select
-                                    className={`p-2 md:px-2 w-full rounded-lg border mt-2 bg-white focus:outline-none text-black ${formErrors.department ? 'border-red-500' : 'border-[#465FF166]'}`}
+                                    className={`p-3 md:px-3 lg:px-3 w-full rounded-lg border mt-2 bg-white focus:outline-none text-black ${getParagraphClass()} ${formErrors.department ? 'border-red-500' : 'border-[#465FF166]'}`}
                                     name="department"
                                     value={formData.department}
                                     onChange={handleInputChange}
@@ -463,12 +479,12 @@ const BookDemo = () => {
                                 )}
                             </div>
                         </div>
-                        <div className='text-white flex ml-[248px] mb-2 md:absolute md:bottom-12 md:right-12 mt-6'>
+                        <div className='text-white flex justify-center w-full md:justify-end lg:justify-end md:absolute lg:absolute md:bottom-12 lg:bottom-8 md:right-12 lg:right-12 mt-6'>
                             <button
-                                className='btn-next flex gap-x-6 items-center font-normal'
+                                className={`btn-next flex gap-x-2 md:gap-x-6 lg:gap-x-4 items-center font-normal ${getParagraphClass()}`}
                                 onClick={handleNextStep}
                             >
-                                Next Step <img src={arrow} alt='arrow' />
+                                Next Step <img src={arrow} alt='arrow' className="w-8 md:w-9 lg:w-8" />
                             </button>
                         </div>
                     </div>
@@ -476,42 +492,35 @@ const BookDemo = () => {
 
                 {/* Step 3 */}
                 {currentStep === 3 && (
-                    <div className='w-full'>
-                        <div className='customise-container items-start flex flex-col mt-6 md:mt-20'>
-                            <h1 className='md:text-[32px] flex mx-auto md:ml-12'>Book Demo</h1>
-                            <p className='text-[#727272] flex md:ml-12 md:w-full md:text-[24px] font-normal mx-auto'>Please pick your suitable date and time slot for the demo.</p>
+                    <div className='w-full px-4 md:px-0 lg:px-8'>
+                        <div className='customise-container items-start flex flex-col mt-6 md:mt-20 lg:mt-12'>
+                            <h1 className={`${getSubheadingClass()} flex mx-auto md:ml-12 lg:ml-4 font-semibold`}>Book Demo</h1>
+                            <p className={`text-[#727272] flex md:ml-12 lg:ml-4 md:w-full lg:w-full ${getParagraphClass()} font-normal mx-auto mt-2`}>Please pick your suitable date and time slot for the demo.</p>
                         </div>
-                        <div className='flex mt-10 items-center'>
+                        <div className='flex mt-6 md:mt-10 lg:mt-8 xl:mt-16 items-center'>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <div className="flex flex-col md:flex-row items-center justify-between w-full mx-auto ml-0 md:ml-16">
+                                <div className="flex flex-col md:flex-row lg:flex-row items-center justify-between w-full mx-auto md:ml-16 lg:ml-4 xl:ml-0 lg:gap-x-0 xl:mx-0 xl:gap-x-0">
                                     {isDesktop ? (
                                         <DateCalendar
                                             value={value}
                                             onChange={(newValue) => setValue(newValue)}
                                             disablePast
-                                            // dayOfWeekFormatter={(day) => {
-                                            //     const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-                                            //     return days[day]; 
-                                            // }}
-                                            className="w-full md:max-w-lg max-w-sm"
+                                            className="w-full md:max-w-lg lg:max-w-md xl:w-full"
                                             sx={{
                                                 width: '500px',
                                                 height: '450px',
                                                 '& .MuiPickersDay-root': {
-                                                    marginX: '8px',
+                                                    marginX: '14px',
                                                     '&:hover': {
                                                         backgroundColor: '#E6F2FF',
                                                     },
                                                 },
                                                 '& .MuiDayCalendar-weekContainer': {
-                                                    justifyContent: 'center',
+                                                    justifyContent: 'space-between',
                                                 },
                                                 '& .MuiPickersDay-root:not(.MuiPickersDay-weekend)': {
-                                                    marginX: '12px',
+                                                    marginX: '26px',
                                                 },
-                                                // '& .MuiPickersDay-root.MuiPickersDay-weekend': {
-                                                //     marginX: '1px',
-                                                // },
                                                 '& .MuiPickersCalendarHeader-label': {
                                                     fontSize: '18px',
                                                 },
@@ -527,15 +536,10 @@ const BookDemo = () => {
                                     ) : (
                                         <DateCalendar
                                             disablePast
-                                            value={value}
                                             onChange={(newValue) => setValue(newValue)}
-                                            // dayOfWeekFormatter={(day) => {
-                                            //     const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-                                            //     return days[day]; 
-                                            // }}
-                                            className="w-full md:max-w-lg max-w-sm"
+                                            className="w-full md:max-w-lg lg:max-w-md max-w-sm"
                                             sx={{
-                                                width: '500px',
+                                                width: { xs: '100%', sm: '500px' },
                                                 height: '450px',
                                                 '& .MuiPickersDay-root': {
                                                     marginX: '8px',
@@ -549,9 +553,6 @@ const BookDemo = () => {
                                                 '& .MuiPickersDay-root:not(.MuiPickersDay-weekend)': {
                                                     marginX: '2px',
                                                 },
-                                                // '& .MuiPickersDay-root.MuiPickersDay-weekend': {
-                                                //     marginX: '1px',
-                                                // },
                                                 '& .MuiPickersCalendarHeader-label': {
                                                     fontSize: '24px',
                                                 },
@@ -565,18 +566,14 @@ const BookDemo = () => {
                                             }}
                                         />
                                     )}
-                                    <div className="md:h-[400px] w-[2px] bg-gray-100 ml-12 "></div>
-                                    <div className='flex flex-col items-center w-7/12'>
-                                        <div className='w-full max-w-[300px] md:mb-4 flex flex-col'>
-                                            <h2 className='text-[18px] md:text-2xl font-semibold text-gray-700 mb-7 mt-4 md:mt-0'>
+                                    <div className="md:h-[400px] lg:h-[350px] w-[2px] bg-gray-100 ml-12 lg:ml-4"></div>
+                                    <div className='flex flex-col items-center w-7/12 lg:w-5/12'>
+                                        <div className='w-full max-w-[300px] lg:max-w-[250px] md:mb-4 flex flex-col'>
+                                            <h2 className='text-[18px] md:text-2xl lg:text-xl font-semibold text-gray-700 mb-7 mt-4 md:mt-0 lg:mt-0'>
                                                 Available Time Slots
                                             </h2>
                                             <div className='overflow-hidden flex items-center mx-auto'>
-                                                <div className={`${slots && slots.length > 0
-                                                    ? 'h-[300px] w-[200px]'
-                                                    : 'h-[50px] w-[150px]'} 
-                                                    overflow-y-scroll`}>
-
+                                                <div className='h-[300px] lg:h-[250px] w-[200px] lg:w-[180px] overflow-y-scroll'>
                                                     {slots && slots.length > 0 ? (
                                                         <div className='space-y-6 p-2'>
                                                             {slots.map((time, index) => (
@@ -602,18 +599,17 @@ const BookDemo = () => {
                                     </div>
                                 </div>
                             </LocalizationProvider>
-
                         </div>
-                        <div className='flex flex-col items-start ml-12 md:ml-16 mt-10 md:mt-24'>
+                        <div className='flex flex-col items-center md:items-start xl:items-start ml-1 md:ml-16 lg:ml-8 mt-10 md:mt-24 lg:mt-16'>
                             <p className='text-[#666666]'>Demo Scheduling</p>
-                            <p className='text-[#333333] font-medium text-[24px]'>{
+                            <p className='text-[#333333] font-medium text-[16px] lg:text-[20px]'>{
                                 selectedSlot ? <>{showDate} | {selectedSlot}</> : <>{ }</>
                             }</p>
                             <p>Time Zone : GMT +5:30 India/Asia</p>
                         </div>
-                        <div className='text-white flex mb-2 md:absolute md:bottom-12 md:right-12 mt-6 w-full items-center justify-center md:items-end md:justify-end'>
-                            <button className='btn-next flex gap-x-2 md:gap-x-6 items-center font-normal'>
-                                Book Demo <img src={arrow} alt='arrow' />
+                        <div className='mb-4 text-white flex justify-center w-full md:justify-end lg:justify-end md:absolute lg:absolute md:bottom-12 lg:bottom-8 md:right-12 lg:right-12 mt-6'>
+                            <button className='btn-next flex gap-x-2 md:gap-x-6 lg:gap-x-4 items-center font-normal'>
+                                Book Demo <img src={arrow} alt='arrow' className="w-8 md:w-9 lg:w-8 xl:w-9" />
                             </button>
                         </div>
                     </div>
