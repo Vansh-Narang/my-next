@@ -5,9 +5,15 @@
     margin-left: auto;
 } */
 .left-container {
-    background-image: url("../assets//Background.jpeg");
-    width: 100vw;
+    background-image: url("../assets/Background.jpeg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    /* min-height: 800px; */
+    max-height: 2560px;
 }
+
 
 .btn-option {
     color: white;
