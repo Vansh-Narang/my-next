@@ -606,22 +606,22 @@ const BookDemo = () => {
                                 </div>
                                 {questionsData[currentQuestionIndex].id === 6 &&
                                     selectedAnswers[6] === "Others (Please Specify)" && (
-                                        <div className="w-full space-x-10 mb-6 px-2 md:px-0">
+                                        <div className="w-full space-x-0 md:space-x-10 mb-6 px-2 md:px-0">
                                             {otherText && (
-                                                <h1 className="mb-2 text-gray-700 font-semibold">
+                                                <h1 className="mb-2 text-gray-700 font-semibold break-words w-full max-w-lg">
                                                     {otherText}
                                                 </h1>
                                             )}
                                             <input
                                                 maxLength={100}
                                                 type="text"
-                                                className="w-full max-w-lg p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#0066FF]"
+                                                className="md:w-full w-60 max-w-lg p-3  border border-gray-300 rounded-lg focus:outline-none focus:border-[#0066FF]"
                                                 placeholder="Please specify your use case"
                                                 value={otherText}
                                                 onChange={handleOtherTextChange}
                                             />
                                             <button
-                                                className={`w-[180px] btn-next mt-2 px-4 ${otherText.trim() ? '' : 'opacity-50 cursor-not-allowed'}`}
+                                                className={`w-[180px] btn-next mt-2 px-4 ${otherText.trim() ? '' : 'opacity-50 cursor-not-allowed'} items-center`}
                                                 onClick={() => {
                                                     if (otherText.trim()) {
                                                         setSelectedAnswers(prev => ({
