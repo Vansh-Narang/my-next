@@ -77,12 +77,8 @@ const IndustryList = [
 ];
 
 const BookDemo = () => {
-    var todayDate = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000)
-        .toISOString()
-        .slice(0, 10);
-    console.log(todayDate);
-
-    // console.log(todayDate)
+    var todayDate = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    // console.log(todayDate);
     const isDesktop = useMediaQuery('(min-width:768px)');
     const [value, setValue] = React.useState(dayjs(todayDate));
     const [selectedAnswers, setSelectedAnswers] = useState({});
@@ -92,7 +88,10 @@ const BookDemo = () => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [pendingAnswer, setPendingAnswer] = useState(null);
     const [isLastQuestionAnswered, setIsLastQuestionAnswered] = useState(false);
-    const [answeredQuestions, setAnsweredQuestions] = useState([]); // Track which questions have been answered
+    const [answeredQuestions, setAnsweredQuestions] = useState([]);
+    const [showOtherInput, setShowOtherInput] = useState(false); // Multi selection ke liye
+    const [otherInputValue, setOtherInputValue] = useState('');// Specify Other input value ke liye
+    const [activeOptionAnimation, setActiveOptionAnimation] = useState(false);//Animation normal
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -108,74 +107,63 @@ const BookDemo = () => {
         const currentQuestion = questionsData.find(q => q.id === questionId);
 
         if (currentQuestion.multiSelect) {
-            // Handle multi-select
+            // Handling multi-select questions (like question 5)
             setMultiSelectAnswers(prev => {
                 const selections = prev[questionId] || [];
 
                 if (selections.includes(option)) {
-                    // Remove option if already selected
-                    const updated = selections.filter(item => item !== option);
-                    return { ...prev, [questionId]: updated };
+                    // Remove if already selected
+                    return { ...prev, [questionId]: selections.filter(item => item !== option) };
                 } else {
-                    // Add option if not already selected
+                    // Add new selection
                     return { ...prev, [questionId]: [...selections, option] };
                 }
             });
 
-            // Track question as answered if at least one option is selected
-            if (!answeredQuestions.includes(currentQuestionIndex) &&
-                (multiSelectAnswers[questionId]?.length > 0 || !multiSelectAnswers[questionId])) {
+            // Update answered questions tracking
+            if (!answeredQuestions.includes(currentQuestionIndex)) {
                 setAnsweredQuestions(prev => [...prev, currentQuestionIndex]);
             }
+        } else if (currentQuestion.hasOther && option === "Others (Please Specify)") {
+            // Handling "Others" option in question 6
+            setSelectedAnswers(prev => ({
+                ...prev,
+                [questionId]: option
+            }));
+            setOtherText('');
+            setShowOtherInput(true);
 
-            // Move to next question if this is the first selection
-            if (!multiSelectAnswers[questionId] || multiSelectAnswers[questionId].length === 0) {
+            if (!answeredQuestions.includes(currentQuestionIndex)) {
+                setAnsweredQuestions(prev => [...prev, currentQuestionIndex]);
+            }
+        } else {
+            // Visual feedback for selection
+            setActiveOptionAnimation(true);
+            setPendingAnswer({ questionId, option });
+
+            // Normal selection handling with smooth animation
+            setTimeout(() => {
+                setSelectedAnswers(prev => ({
+                    ...prev,
+                    [questionId]: option
+                }));
+
+                if (!answeredQuestions.includes(currentQuestionIndex)) {
+                    setAnsweredQuestions(prev => [...prev, currentQuestionIndex]);
+                }
+
+                setPendingAnswer(null);
+                setActiveOptionAnimation(false);
+
+                // Auto-advance to next question after selection (except for multi-select)
                 if (currentQuestionIndex < questionsData.length - 1) {
                     setTimeout(() => {
                         setCurrentQuestionIndex(prev => prev + 1);
-                    }, 500);
+                    }, 300);
                 } else if (currentQuestionIndex === questionsData.length - 1) {
                     setIsLastQuestionAnswered(true);
                 }
-            }
-        } else if (currentQuestion.hasOther && option === "Others (Please Specify)") {
-            // Handle "Others" option - select it but don't move to next question yet
-            setPendingAnswer({ questionId, option });
-
-            setTimeout(() => {
-                setSelectedAnswers(prev => ({
-                    ...prev,
-                    [questionId]: option
-                }));
-
-                if (!answeredQuestions.includes(currentQuestionIndex)) {
-                    setAnsweredQuestions(prev => [...prev, currentQuestionIndex]);
-                }
-
-                setPendingAnswer(null);
-            }, 500);
-        } else {
-            // Regular single selection
-            setPendingAnswer({ questionId, option });
-
-            setTimeout(() => {
-                setSelectedAnswers(prev => ({
-                    ...prev,
-                    [questionId]: option
-                }));
-
-                if (!answeredQuestions.includes(currentQuestionIndex)) {
-                    setAnsweredQuestions(prev => [...prev, currentQuestionIndex]);
-                }
-
-                setPendingAnswer(null);
-
-                if (currentQuestionIndex < questionsData.length - 1) {
-                    setCurrentQuestionIndex(prev => prev + 1);
-                } else if (currentQuestionIndex === questionsData.length - 1) {
-                    setIsLastQuestionAnswered(true);
-                }
-            }, 500);
+            }, 400);
         }
     }, [currentQuestionIndex, answeredQuestions, multiSelectAnswers]);
 
@@ -183,51 +171,81 @@ const BookDemo = () => {
         setOtherText(e.target.value);
     };
 
-    // Handle going back to previous question
     const handlePrevious = () => {
         if (currentQuestionIndex > 0) {
-            setCurrentQuestionIndex(prev => prev - 1);
+            // Add a slight delay for animation
+            setActiveOptionAnimation(true);
+            setTimeout(() => {
+                setCurrentQuestionIndex(prev => prev - 1);
+                setActiveOptionAnimation(false);
+
+                // Clear "Other" input if moving back from question 6
+                if (currentQuestionIndex === 6 && showOtherInput) {
+                    setShowOtherInput(false);
+                }
+            }, 200);
         }
     };
-
-    // Handle going back to previous step
-    const handlePreviousStep = () => {
-        setCurrentStep(prev => prev - 1);
-    };
+    // const handlePreviousStep = () => {
+    //     setCurrentStep(prev => prev - 1);
+    // };
 
     const handleNext = () => {
-        // Check if all questions are answered
-        const allQuestionsAnswered = questionsData.every(question => {
-            if (question.multiSelect) {
-                // For multi-select questions, check if at least one option is selected
-                return multiSelectAnswers[question.id]?.length > 0;
-            } else if (question.id === 6 && selectedAnswers[question.id] === "Others (Please Specify)") {
-                // For "Others" option in question 6, make sure text is provided
-                return otherText.trim() !== '';
-            } else {
-                // For regular questions, check if an answer is selected
-                return selectedAnswers[question.id];
-            }
-        });
+        const currentQuestion = questionsData[currentQuestionIndex];
+        let canProceed = false;
 
-        if (allQuestionsAnswered) {
-            setCurrentStep(prevStep => prevStep + 1);
+        // Check if the current question has been answered
+        if (currentQuestion.multiSelect) {
+            // For multi-select questions
+            canProceed = multiSelectAnswers[currentQuestion.id]?.length > 0;
+        } else if (currentQuestion.hasOther && selectedAnswers[currentQuestion.id] === "Others (Please Specify)") {
+            // For "Others" option
+            canProceed = otherText.trim() !== '';
         } else {
-            // Find the first unanswered question
-            const firstUnansweredIndex = questionsData.findIndex(question => {
-                if (question.multiSelect) {
-                    return !multiSelectAnswers[question.id] || multiSelectAnswers[question.id].length === 0;
-                } else if (question.id === 6 && selectedAnswers[question.id] === "Others (Please Specify)") {
-                    return otherText.trim() === '';
-                } else {
-                    return !selectedAnswers[question.id];
-                }
-            });
+            // Normal single-answer flow
+            canProceed = !!selectedAnswers[currentQuestion.id];
+        }
 
-            if (firstUnansweredIndex !== -1) {
-                setCurrentQuestionIndex(firstUnansweredIndex);
+        if (!canProceed) {
+            alert("Please answer the current question to proceed.");
+            return;
+        }
+
+        // If on the last question and all are answered, move to the next step
+        if (currentQuestionIndex === questionsData.length - 1) {
+            setCurrentStep(prevStep => prevStep + 1);
+            // setProgress(100); // Progress for completion
+        } else {
+            // If not the last question, find the next unanswered question
+            const nextUnansweredIndex = findNextUnansweredQuestion();
+            if (nextUnansweredIndex !== -1) {
+                setCurrentQuestionIndex(nextUnansweredIndex);
+            } else {
+                // If all questions are answered, proceed to the next step
+                setCurrentQuestionIndex(prevIndex => prevIndex + 1);
             }
         }
+    };
+
+    const findNextUnansweredQuestion = () => {
+        for (let i = 0; i < questionsData.length; i++) {
+            const question = questionsData[i];
+            let isAnswered = false;
+
+            if (question.multiSelect) {
+                isAnswered = multiSelectAnswers[question.id]?.length > 0;
+            } else if (question.hasOther && selectedAnswers[question.id] === "Others (Please Specify)") {
+                isAnswered = otherText.trim() !== '';
+            } else {
+                isAnswered = !!selectedAnswers[question.id];
+            }
+
+            if (!isAnswered) {
+                return i;
+            }
+        }
+
+        return -1;
     };
 
     const handleInputChange = (e) => {
@@ -237,7 +255,7 @@ const BookDemo = () => {
             [name]: value
         }));
 
-        // Clear errors when user starts typing
+        // Clearing errors when user starts typing
         if (formErrors[name]) {
             setFormErrors(prev => ({
                 ...prev,
@@ -245,18 +263,17 @@ const BookDemo = () => {
             }));
         }
 
-        // Name validation: only allow alphabets and spaces
-        if (name === 'firstName' || name === 'lastName') {
-            const regex = /^[a-zA-Z\s]+$/;
-            if (!regex.test(value) && value.length > 0) {
-                setFormErrors(prev => ({
-                    ...prev,
-                    [name]: 'Only alphabets are allowed.'
-                }));
-            }
-        }
+        // if (name === 'firstName' || name === 'lastName') {
+        //     const regex = /^[a-zA-Z\s]+$/;
+        //     if (!regex.test(value) && value.length > 0) {
+        //         setFormErrors(prev => ({
+        //             ...prev,
+        //             [name]: 'Only English alphabets are allowed.'
+        //         }));
+        //     }
+        // }
         if (name === 'email' && value.length > 0) {
-            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,}$/;
 
             if (!emailRegex.test(value)) {
                 setFormErrors(prev => ({
@@ -265,30 +282,69 @@ const BookDemo = () => {
                 }));
             }
         }
+        // if (name === 'companyName') {
+        //     const companyNameRegex = /^[a-zA-Z0-9\s]+$/;
+        //     if (!companyNameRegex.test(value) && value.length > 0) {
+        //         setFormErrors(prev => ({
+        //             ...prev,
+        //             [name]: 'Company name should not contain special characters.'
+        //         }));
+        //     }
+        // }
+        if (name === 'firstName' || name === 'lastName' || name === 'companyName') {
+            const maxLength = 50;
+            if (value.length >= maxLength) {
+                setFormErrors(prev => ({
+                    ...prev,
+                    [name]: `This field should not exceed ${maxLength} characters.`
+                }));
+            }
+            const regex = /^[a-zA-Z\s]+$/;
+            if (!regex.test(value) && value.length > 0) {
+                setFormErrors(prev => ({
+                    ...prev,
+                    [name]: 'Only English alphabets are allowed.'
+                }));
+            }
+        }
+
     };
 
     const validateForm = () => {
         const errors = {};
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const nameRegex = /^[a-zA-Z\s]+$/;
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,}$/;
+        const companyNameRegex = /^[a-zA-Z0-9\s]+$/;
+        const maxLength = 50;
 
         Object.keys(formData).forEach(key => {
             if (!formData[key].trim()) {
                 errors[key] = 'This field is required';
+            } else if ((key === 'firstName' || key === 'lastName' || key === 'companyName') && formData[key].length >= maxLength) {
+                errors[key] = `This field should not exceed ${maxLength} characters.`;
+            } else if ((key === 'firstName' || key === 'lastName') && !nameRegex.test(formData[key])) {
+                errors[key] = 'Only alphabets are allowed';
+            } else if (key === 'email' && !emailRegex.test(formData[key])) {
+                errors[key] = 'Please enter a valid email address';
+            } else if (key === 'companyName' && !companyNameRegex.test(formData[key])) {
+                errors[key] = 'Company name should not contain special characters';
             }
         });
-        if (formData.email && !emailRegex.test(formData.email)) {
-            errors.email = 'Please enter a valid email address';
-        }
+
 
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
-    };
-
+    }
     const handleNextStep = () => {
         if (validateForm()) {
             setCurrentStep(3);
         }
     };
+
+    const isMultiSelect = questionsData[currentQuestionIndex]?.multiSelect;
+
+
+
     const [slots, setSlots] = useState([]);
     const [selectedSlot, setSelectedSlot] = useState(null);
 
@@ -329,47 +385,57 @@ const BookDemo = () => {
     };
 
     useEffect(() => {
-        const selectedDay = val.getDay(); // Get selected day
-        const selectedDate = moment(val);
-        const currentTime = moment(); // Get current time
+        const selectedDay = val.getDay(); // Get the day of the week
+        const selectedDate = moment(val); // The selected date
+        const currentTime = moment(); // Current time
 
-        const startOfDay = moment().set({ hour: 8, minute: 0, second: 0 });
+        const startOfDay = moment().set({ hour: 8, minute: 0, second: 0 }); // 8:00 AM
         const endOfDay = moment().set({ hour: 20, minute: 0, second: 0 }); // 8:00 PM
 
         const updateAvailableSlots = () => {
             let generatedSlots = [];
 
-            if (selectedDay === 0 || selectedDay === 6) {
-                setSlots([]); // No slots on weekends
-            } else if (selectedDate.isSame(currentTime, 'day')) {
-                // If selected date is today, check current time
-                if (currentTime.isBefore(startOfDay) || currentTime.isAfter(endOfDay)) {
-                    // Before 8:00 AM or after 8:00 PM → Show full slots
-                    generatedSlots = intervals('08:00 AM', '08:00 PM');
+            if (selectedDate.isSame(currentTime, 'day')) {
+                // If the selected date is today
+                if (currentTime.isAfter(endOfDay)) {
+                    // If the current time is after 8:00 PM, clear slots
+                    setSlots([]);
                 } else {
-                    // Within working hours → Show only future slots
-                    const formattedCurrentTime = moment(currentTime).add(30 - (currentTime.minute() % 30), 'minutes').format('hh:mm A');
+                    // For the remaining time of the day, calculate slots starting from the next available time
+                    const formattedCurrentTime = currentTime
+                        .add(30 - (currentTime.minute() % 30), 'minutes') // Round to next available slot
+                        .format('hh:mm A');
                     generatedSlots = intervals(formattedCurrentTime, '08:00 PM');
                 }
+
+                // Clear the selected slot if it's today and in the past
+                if (
+                    selectedSlot &&
+                    moment(selectedSlot, 'hh:mm A').isBefore(currentTime)
+                ) {
+                    setSelectedSlot(null);
+                }
+            } else if (selectedDay === 0 || selectedDay === 6) {
+                // If the day is Sunday or Saturday (weekend), no slots
+                setSlots([]);
             } else {
-                // If future date, show all slots
+                // For future days, generate slots from the start to the end of the day
                 generatedSlots = intervals('08:00 AM', '08:00 PM');
             }
 
-            setSlots(generatedSlots);
-
-            // If selected slot is now in the past, clear it
-            if (selectedSlot && moment(selectedSlot, 'hh:mm A').isBefore(currentTime)) {
-                setSelectedSlot(null);
-            }
+            setSlots(generatedSlots); // Update state with generated slots
         };
 
-        updateAvailableSlots(); // Run on mount
+        updateAvailableSlots(); // Run the function initially
 
-        const intervalId = setInterval(updateAvailableSlots, 60000); // Update every minute
+        // Set up the interval to update slots every minute
+        const intervalId = setInterval(() => {
+            updateAvailableSlots();
+        }, 60000);
 
-        return () => clearInterval(intervalId); // Cleanup on unmount
+        return () => clearInterval(intervalId); // Clean up the interval on unmount
     }, [value, selectedSlot]);
+
 
 
     const handleSlotSelection = (time) => {
@@ -378,10 +444,9 @@ const BookDemo = () => {
         }
     };
 
-    // Calculate progress based on the highest answered question index
-    const progress = answeredQuestions.length > 0
-        ? ((Math.max(...answeredQuestions) + 1) / questionsData.length) * 100
-        : 0;
+    const progress = currentQuestionIndex > 0
+        ? ((currentQuestionIndex + 1) / questionsData.length) * 100
+        : 0
 
     const getContainerStyles = () => {
         if (!slots || slots.length === 0) {
@@ -407,22 +472,20 @@ const BookDemo = () => {
         };
     };
 
-    // Check if current question is answered
     const isCurrentQuestionAnswered = () => {
         const currentQuestion = questionsData[currentQuestionIndex];
 
         if (currentQuestion.multiSelect) {
             return multiSelectAnswers[currentQuestion.id]?.length > 0;
-        } else if (currentQuestion.id === 6 && selectedAnswers[currentQuestion.id] === "Others (Please Specify)") {
+        } else if (currentQuestion.hasOther && selectedAnswers[currentQuestion.id] === "Others (Please Specify)") {
             return otherText.trim() !== '';
         } else {
             return !!selectedAnswers[currentQuestion.id];
         }
     };
 
-    // Handle submit for final step
     const handleSubmitBooking = () => {
-        // Here you would normally send the data to your backend
+        // For backend (need to see)
         console.log("Form Data:", formData);
         console.log("Selected Answers:", selectedAnswers);
         console.log("Multi-Select Answers:", multiSelectAnswers);
@@ -430,7 +493,6 @@ const BookDemo = () => {
         console.log("Selected Date:", showDate);
         console.log("Selected Slot:", selectedSlot);
 
-        // You could show a confirmation dialog or navigate to a success page
         alert("Demo booking submitted successfully!");
     };
 
@@ -462,7 +524,7 @@ const BookDemo = () => {
                 <div className='flex justify-center sm:text-start mt-10 md:mt-24 w-full xl:justify-start xl:ml-16'>
                     <h3 className='text-[#333B52] text-[13px] md:text-[18.9px] 2xl:text-[18.9px] flex text-center'>Trusted by over Top AI companies of all size</h3>
                 </div>
-                <div className='lg:ml-14 md:mt-4 mt-10 mb-8 w-full xl:ml-5 2xl:ml-6'>
+                <div className='lg:ml-14 md:mt-4 mt-10 mb-8 w-full xl:ml-5 2xl:ml-6 xl:px-2 2xl:px-0'>
                     <div className='grid grid-cols-4 gap-x-0 sm:gap-x-10 xl:w-full xl:gap-x-0'>
                         <img src={zoom} alt='zoom' className='' />
                         <img src={reuters} alt='reuters' className='' />
@@ -487,7 +549,7 @@ const BookDemo = () => {
                     <div className='w-full'>
                         <div className='customise-container items-center xl:items-start flex flex-col md:mt-20 mt-6 max-w-full'>
                             <h1 className='md:text-[28px] lg:text-[32px] xl:text-[27px] flex justify-center md:justify-normal md:ml-16 xl:ml-12 w-full'>Customize your 30-Minute Demo</h1>
-                            <p className='text-[#727272] ml-2 items-center justify-center md:ml-16 xl:ml-12 2xl:ml-12 flex md:items-start md:justify-normal md:text-[20px] lg:text-[24px] text-[18px] xl:text-[22px] font-normal w-full'>Setup your primary focus and customize the demo accordingly.</p>
+                            <p className='text-[#727272] ml-0 px-1 items-center justify-center md:px-2 xl:px-4 md:ml-12 xl:ml-8 2xl:ml-8 flex md:items-start md:justify-normal md:text-[20px] lg:text-[24px] text-[18px] xl:text-[20px] font-normal w-full'>Setup your primary focus and customize the demo accordingly.</p>
                         </div>
                         <div className='w-full max-w-full px-4 md:px-8 xl:px-8 2xl:px-10'>
                             <ProgressBar
@@ -504,23 +566,22 @@ const BookDemo = () => {
                                     variants={optionVariants}
                                     className='delay-100 transition duration-150 ease-in-out'
                                 >
-                                    <h2 className="font-semibold mb-2 text-start ml-4 md:ml-8 xl:ml-12 text-[16px] md:text-[22px] lg:text-[28px] xl:text-[22px] 2xl:text-[22px] text-[#000000]">
+                                    <h2 className="font-semibold mb-2 text-start px-4 xl:px-2 md:ml-8 xl:ml-12 text-[16px] md:text-[22px] lg:text-[28px] xl:text-[22px] 2xl:text-[22px] text-[#000000]">
                                         {questionsData[currentQuestionIndex].text} <StyledSpan>*</StyledSpan>
                                     </h2>
                                 </motion.div>
-                                <div className="flex flex-wrap gap-4 md:gap-6 md:gap-y-8 justify-start items-center ml-3 xl:justify-normal lg:ml-6 xl:ml-12 my-6 lg:text-[15px] max-w-full">
+                                <div className="flex flex-wrap gap-4 md:gap-6 md:gap-y-8 justify-start items-center px-2 md:px-0 xl:justify-normal lg:ml-6 xl:ml-12 my-6 lg:text-[15px] max-w-full">
                                     {questionsData[currentQuestionIndex].options.map((option) => {
                                         const isMultiSelect = questionsData[currentQuestionIndex].multiSelect;
                                         const currentQuestionId = questionsData[currentQuestionIndex].id;
 
-                                        // Determine if this option is selected
+
                                         let isSelected = false;
                                         if (isMultiSelect) {
                                             isSelected = multiSelectAnswers[currentQuestionId]?.includes(option);
                                         } else {
                                             isSelected = selectedAnswers[currentQuestionId] === option;
                                         }
-
                                         return (
                                             <motion.div
                                                 key={option}
@@ -543,11 +604,16 @@ const BookDemo = () => {
                                         );
                                     })}
                                 </div>
-
                                 {questionsData[currentQuestionIndex].id === 6 &&
                                     selectedAnswers[6] === "Others (Please Specify)" && (
-                                        <div className="w-full ml-3 xl:justify-normal lg:ml-6 xl:ml-12 mb-6">
+                                        <div className="w-full space-x-10 mb-6 px-2 md:px-0">
+                                            {otherText && (
+                                                <h1 className="mb-2 text-gray-700 font-semibold">
+                                                    {otherText}
+                                                </h1>
+                                            )}
                                             <input
+                                                maxLength={100}
                                                 type="text"
                                                 className="w-full max-w-lg p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#0066FF]"
                                                 placeholder="Please specify your use case"
@@ -555,32 +621,26 @@ const BookDemo = () => {
                                                 onChange={handleOtherTextChange}
                                             />
                                             <button
-                                                className={`mt-2 px-4 py-2 rounded bg-blue-500 text-white ${otherText.trim() ? '' : 'opacity-50 cursor-not-allowed'}`}
+                                                className={`w-[180px] btn-next mt-2 px-4 ${otherText.trim() ? '' : 'opacity-50 cursor-not-allowed'}`}
                                                 onClick={() => {
                                                     if (otherText.trim()) {
-                                                        setMultiSelectAnswers(prev => ({
-                                                            ...prev,
-                                                            6: [...(prev[6] || []), otherText.trim()]
-                                                        }));
                                                         setSelectedAnswers(prev => ({
                                                             ...prev,
-                                                            6: otherText.trim()
+                                                            6: "Others (Please Specify)", // Keeps "Others" visually selected
                                                         }));
-                                                        setOtherText(""); // Clear input field
-                                                        handleNext(); // Move to the next question
+                                                        // setOtherText('')
+                                                        handleNext();
                                                     }
+                                                    //handleNext()
                                                 }}
-                                                disabled={!otherText.trim()} // Disable if empty
+                                                disabled={!otherText.trim()}
                                             >
-                                                Add Option & Continue
+                                                Save & Continue
                                             </button>
                                         </div>
-                                    )
-                                }
-
-
+                                    )}
                                 {/* Display selected multi-select options, including "Others" */}
-                                {questionsData[currentQuestionIndex].multiSelect &&
+                                {/* {questionsData[currentQuestionIndex].multiSelect &&
                                     multiSelectAnswers[questionsData[currentQuestionIndex].id]?.length > 0 && (
                                         <div className="ml-3 xl:ml-12 mb-4 w-full max-w-lg">
                                             <p className="text-sm text-gray-600 mb-2">Selected options:</p>
@@ -606,23 +666,23 @@ const BookDemo = () => {
                                                 ))}
                                             </div>
                                         </div>
-                                    )}
+                                    )} */}
                             </div>
                         </div>
 
-                        <div className='flex justify-between items-center mt-10 lg:mx-2 xl:mx-7 px-1 py-2'>
+                        <div className='flex justify-end gap-x-4 md:gap-x-1  items-center mt-10 lg:mx-2 xl:mx-7 px-2 py-2'>
                             <button
-                                className={`flex gap-x-2 items-center font-normal xl:text-[16px] 2xl:text-[16px] ${currentQuestionIndex === 0 ? 'opacity-50 cursor-not-allowed text-gray-400' : 'text-[#0066FF]'} font-semibold`}
+                                className={`btn-next1 flex gap-x-2 md:gap-x-6 md:w-48 w-42 items-center font-normal xl:text-[16px] 2xl:text-[18px] ${currentQuestionIndex === 0 ? 'opacity-50 cursor-not-allowed text-gray-400' : 'text-[#0066FF]'} font-semibold`}
                                 onClick={handlePrevious}
                                 disabled={currentQuestionIndex === 0}
                             >
-                                <img src={backArrow} alt='back arrow' /> Previous
+                                <img src={arrow} alt='arrow' /> Previous
                             </button>
 
                             <button
-                                className={`btn-next flex gap-x-2 md:gap-x-6 items-center font-normal xl:text-[16px] 2xl:text-[16px] ${currentQuestionIndex === questionsData.length - 1 && isLastQuestionAnswered ? '' : 'opacity-50 cursor-not-allowed'} font-semibold`}
+                                className={`btn-next flex gap-x-2 md:gap-x-6 md:w-48 w-44 items-center font-normal xl:text-[16px] 2xl:text-[18px] ${!isLastQuestionAnswered && !questionsData[currentQuestionIndex]?.multiSelect ? 'opacity-50 cursor-not-allowed' : ''} font-semibold`}
                                 onClick={handleNext}
-                                disabled={!(currentQuestionIndex === questionsData.length - 1 && isLastQuestionAnswered)}
+                                disabled={!isCurrentQuestionAnswered() && !isLastQuestionAnswered}
                             >
                                 Next Step <img src={arrow} alt='arrow' />
                             </button>
@@ -633,9 +693,9 @@ const BookDemo = () => {
                 {/* Step 2 */}
                 {currentStep === 2 && (
                     <div className='flex items-center w-full flex-col md:items-start'>
-                        <div className='customise-container items-start flex flex-col md:ml-10 mt-6 md:mt-20'>
+                        <div className='customise-container items-start flex flex-col md:px-10 mt-6 md:mt-20'>
                             <h1 className='md:text-[32px] flex mx-auto md:ml-0'>Your Information</h1>
-                            <p className='text-[#727272] md:-ml-0 w-full md:text-start md:w-full md:text-[24px] font-normal'>Please provide your information and schedule the demo seamlessly.</p>
+                            <p className='text-[#727272] w-full md:text-start md:w-full md:text-[22px] lg:text-[24px] font-normal'>Please provide your information and schedule the demo seamlessly.</p>
                         </div>
                         <div className='flex flex-col md:flex-row m-0 md:m-10 w-11/12 space-y-4 md:space-y-0 md:space-x-14 lg:space-x-16 xl:space-x-14 mt-10 2xl:gap-x-4'>
                             <div className='flex flex-col items-start w-full md:w-1/2'>
@@ -643,7 +703,7 @@ const BookDemo = () => {
                                     First Name <StyledSpan>*</StyledSpan>
                                 </label>
                                 <input
-                                    maxLength={12}
+                                    maxLength={50}
                                     className={`p-2 md:px-3 rounded-lg border w-full mt-2 focus:outline-none ${formErrors.firstName ? 'border-red-500' : 'border-[#465FF166]'}`}
                                     type="text"
                                     name="firstName"
@@ -661,7 +721,7 @@ const BookDemo = () => {
                                     Last Name <StyledSpan>*</StyledSpan>
                                 </label>
                                 <input
-                                    maxLength={12}
+                                    maxLength={50}
                                     className={`p-2 md:px-3 rounded-lg border w-full mt-2 focus:outline-none ${formErrors.lastName ? 'border-red-500' : 'border-[#465FF166]'}`}
                                     type="text"
                                     name="lastName"
@@ -698,6 +758,7 @@ const BookDemo = () => {
                                     Company Name <StyledSpan>*</StyledSpan>
                                 </label>
                                 <input
+                                    maxLength={50}
                                     className={`p-2 md:px-3 rounded-lg border w-full mt-2 focus:outline-none ${formErrors.companyName ? 'border-red-500' : 'border-[#465FF166]'}`}
                                     type="text"
                                     name="companyName"
