@@ -18,7 +18,7 @@ const ProgressBar = ({ bgcolor, progress, height }) => {
     };
 
     return (
-        <div className='flex items-center w-full gap-4 px-4 md:px-0 md:ml-0 mt-4 xl:ml-6 2xl:ml-2'>
+        <div className='flex items-center w-full gap-4'>
             <div style={Parentdiv} className="w-full max-w-full">
                 <div style={Childdiv}></div>
             </div>

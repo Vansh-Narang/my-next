@@ -9,6 +9,7 @@ import reuters from "../assets/reuters.svg"
 import heineken from "../assets/heineken.svg"
 import logo from "../assets/NexaStack.svg"
 import arrow from "../assets/Vector.svg"
+import background from "../assets/Background.jpeg"
 import "../Pages/Button.css"
 import { motion } from 'framer-motion';
 import moment from 'moment';
@@ -19,6 +20,7 @@ import dayjs from 'dayjs';
 import styled from "styled-components";
 import { useMediaQuery } from '@mui/material';
 import ProgressBar from '../Components/ProgressBar'
+// import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 const StyledSpan = styled.span`
   color: red;
@@ -37,9 +39,9 @@ const questionsData = [
     { id: 1, text: "Which segment does your company belongs to?", options: ["Startup", "Scale Startup", "SME", "Mid Enterprises", "Large Enterprises", "Public Sector", "Non-Profit Organizations"] },
     { id: 2, text: "How many technical teams will be working with NexaStack?", options: ["0-10", "11-50", "51-100", "More Than 100", "Only Me"] },
     { id: 3, text: "Does your team have in-house AI/ML expertise, or do you need support?", options: ["We have an in-house AI/ML team", "We need external AI/ML support", "Need additional support", "Not sure yet, exploring options"] },
-    { id: 4, text: "Do you have specific compliance requirements (e.g., GDPR, HIPAA)?", options: ["GDRP", "HIPAA", "None", "Not Sure"] },
-    { id: 5, text: "Where do you plan to deploy NexaStack for Unified Inference, and what are your infrastructure needs? (you can select multiple)", options: ["On-Premises – We have enterprise-grade hardware", "On-Premises - Need hardware recommendations", "Amazon", "Microsoft Azure", "Google Cloud", "Multi Cloud", "Not sure yet, need guidance"], multiSelect: true },
-    { id: 6, text: "What is your primary use case for NexaStack?", options: ["Agentic AI Development & Deployment", "AI Model Inference & Optimization", "Enterprise AI Operations", "MLOps & Model Lifecycle Management", "AI-Powered Applications & Services", "Others (Please Specify)"], hasOther: true },
+    { id: 4, text: "Do you have specific compliance requirements (e.g., GDPR, HIPAA)?", options: ["GDPR", "HIPAA", "None", "Not Sure"] },
+    { id: 5, text: "Where do you plan to deploy NexaStack for Unified Inference, and what are your infrastructure needs? (you can select multiple)", options: ["On-Premises – We have enterprise-grade hardware", "On-Premises - Need hardware recommendations", "Amazon Web Services (AWS) ", "Microsoft Azure", "Google Cloud", "Multi Cloud", "Not sure yet, need guidance"], multiSelect: true },
+    { id: 6, text: "What is your primary use case for NexaStack?", options: ["Agentic AI Development & Deployment", "AI Model Inference & Optimization", "Enterprise AI Operations", "MLOps & Model Lifecycle Management", "AI-Powered Applications & Services", "Other (Please Specify)"], hasOther: true },
     { id: 7, text: "Are there specific AI models you plan to operate using NexaStack?", options: ["LLMs (Large Language Models)", "Vision Models", "Recommendation Systems", "Speech & Audio Models", "Custom AI/ML Models", "Not Sure, Need Guidance"] },
 ];
 const IndustryList = [
@@ -273,917 +275,6 @@ const countries = [
     { value: "Zambia", label: "Zambia" },
     { value: "Zimbabwe", label: "Zimbabwe" },
 ];
-
-const BookDemo = () => {
-    var todayDate = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-    // console.log(todayDate);
-    const isDesktop = useMediaQuery('(min-width:768px)');
-    const [value, setValue] = React.useState(dayjs(todayDate));
-    const [selectedAnswers, setSelectedAnswers] = useState({});
-    const [multiSelectAnswers, setMultiSelectAnswers] = useState({});
-    const [otherText, setOtherText] = useState('');
-    const [currentStep, setCurrentStep] = useState(3);
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [pendingAnswer, setPendingAnswer] = useState(null);
-    const [isLastQuestionAnswered, setIsLastQuestionAnswered] = useState(false);
-    const [answeredQuestions, setAnsweredQuestions] = useState([]);
-    const [isNextEnabled, setIsNextEnabled] = useState(false);
-    const [showOtherInput, setShowOtherInput] = useState(false); // Multi selection ke liye
-    const [savedText, setSavedText] = useState('')
-    // const [otherInputValue, setOtherInputValue] = useState('');// Specify Other input value ke liye
-    // const [activeOptionAnimation, setActiveOptionAnimation] = useState(false);//Animation normal
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        country: '',
-        industry: '',
-        department: ''
-    });
-    const [formErrors, setFormErrors] = useState({});
-
-    // Handle selection of an answer
-    const handleAnswer = useCallback((questionId, option) => {
-        const currentQuestion = questionsData.find(q => q.id === questionId);
-
-        if (currentQuestion.multiSelect) {
-            // Handling multi-select questions (like question 5)
-            setMultiSelectAnswers(prev => {
-                const selections = prev[questionId] || [];
-
-                if (selections.includes(option)) {
-                    // Remove if already selected
-                    return { ...prev, [questionId]: selections.filter(item => item !== option) };
-                } else {
-                    // Add new selection
-                    return { ...prev, [questionId]: [...selections, option] };
-                }
-            });
-
-            // Update answered questions tracking
-            if (!answeredQuestions.includes(currentQuestionIndex)) {
-                setAnsweredQuestions(prev => [...prev, currentQuestionIndex]);
-            }
-        } else if (currentQuestion.hasOther && option === "Others (Please Specify)") {
-            // Handling "Others" option in question 6
-            setSelectedAnswers(prev => ({
-                ...prev,
-                [questionId]: option
-            }));
-            setOtherText('');
-            setSavedText('')
-            setShowOtherInput(true);
-
-            if (!answeredQuestions.includes(currentQuestionIndex)) {
-                setAnsweredQuestions(prev => [...prev, currentQuestionIndex]);
-            }
-        } else {
-            // Visual feedback for selection
-            //  setActiveOptionAnimation(true);
-            setPendingAnswer({ questionId, option });
-
-            // Normal selection handling with smooth animation
-            setTimeout(() => {
-                setSelectedAnswers(prev => ({
-                    ...prev,
-                    [questionId]: option
-                }));
-
-                if (!answeredQuestions.includes(currentQuestionIndex)) {
-                    setAnsweredQuestions(prev => [...prev, currentQuestionIndex]);
-                }
-
-                setPendingAnswer(null);
-                //   setActiveOptionAnimation(false);
-
-                // Auto-advance to next question after selection (except for multi-select)
-                if (currentQuestionIndex < questionsData.length - 1) {
-                    setTimeout(() => {
-                        setCurrentQuestionIndex(prev => prev + 1);
-                    }, 100);
-                } else if (currentQuestionIndex === questionsData.length - 1) {
-                    setIsLastQuestionAnswered(true);
-                }
-            }, 100);
-        }
-    }, [currentQuestionIndex, answeredQuestions, multiSelectAnswers]);
-
-    const handleOtherTextChange = (e) => {
-        setOtherText(e.target.value);
-    };
-
-    const handlePrevious = () => {
-        if (currentQuestionIndex > 0) {
-            // Add a slight delay for animation
-            // setActiveOptionAnimation(true);
-            setTimeout(() => {
-                setCurrentQuestionIndex(prev => prev - 1);
-                //  setActiveOptionAnimation(false);
-
-                // Clear "Other" input if moving back from question 6
-                if (currentQuestionIndex === 6 && showOtherInput) {
-                    setShowOtherInput(false);
-                }
-            }, 100);
-        }
-    };
-    const handlePreviousStep = () => {
-        setCurrentStep(prev => prev - 1);
-    };
-
-    const handleNext = () => {
-        const currentQuestion = questionsData[currentQuestionIndex];
-        let canProceed = false;
-
-        // Check if the current question has been answered
-        if (currentQuestion.multiSelect) {
-            // For multi-select questions
-            canProceed = multiSelectAnswers[currentQuestion.id]?.length > 0;
-        } else if (currentQuestion.hasOther && selectedAnswers[currentQuestion.id] === "Others (Please Specify)") {
-            // For "Others" option
-            canProceed = savedText.trim() !== '';
-        } else {
-            // Normal single-answer flow
-            canProceed = !!selectedAnswers[currentQuestion.id];
-        }
-
-        if (!canProceed) {
-            alert("Please answer the current question to proceed.");
-            return;
-        }
-
-        // If on the last question and all are answered, move to the next step
-        if (currentQuestionIndex === questionsData.length - 1) {
-            setCurrentStep(prevStep => prevStep + 1);
-        } else {
-            // If not the last question, find the next unanswered question
-            // const nextUnansweredIndex = findNextUnansweredQuestion();
-            // if (nextUnansweredIndex !== -1) {
-            //     setCurrentQuestionIndex(nextUnansweredIndex);
-            // } else {
-            // If all questions are answered, proceed to the next question
-            setCurrentQuestionIndex(prevIndex => prevIndex + 1);
-            // }
-        }
-    };
-
-    // const findNextUnansweredQuestion = () => {
-    //     for (let i = 0; i < questionsData.length; i++) {
-    //         const question = questionsData[i];
-    //         let isAnswered = false;
-
-    //         if (question.multiSelect) {
-    //             isAnswered = multiSelectAnswers[question.id]?.length > 0;
-    //         } else if (question.hasOther && selectedAnswers[question.id] === "Others (Please Specify)") {
-    //             isAnswered = otherText.trim() !== '';
-    //         } else {
-    //             isAnswered = !!selectedAnswers[question.id];
-    //         }
-
-    //         if (!isAnswered) {
-    //             return i;
-    //         }
-    //     }
-
-    //     return -1;
-    // };
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-
-        // Clearing errors when user starts typing
-        if (formErrors[name]) {
-            setFormErrors(prev => ({
-                ...prev,
-                [name]: ''
-            }));
-        }
-        if (name === 'firstName' || name === 'lastName') {
-            const maxLength = 50;
-            if (value.length >= maxLength) {
-                setFormErrors(prev => ({
-                    ...prev,
-                    [name]: `This field should not exceed ${maxLength} characters.`
-                }));
-            }
-            const regex = /^[a-zA-Z\s]+$/;
-            if (!regex.test(value) && value.length > 0) {
-                setFormErrors(prev => ({
-                    ...prev,
-                    [name]: 'Only English alphabets are allowed.'
-                }));
-            }
-        }
-
-    };
-
-    const validateForm = () => {
-        const errors = {};
-        const nameRegex = /^[a-zA-Z\s]+$/;
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,}$/;
-        // const companyNameRegex = /^[a-zA-Z0-9\s]+$/;
-        const maxLength = 50;
-
-        Object.keys(formData).forEach(key => {
-            if (!formData[key].trim()) {
-                errors[key] = 'This field is required';
-            } else if ((key === 'firstName' || key === 'lastName') && formData[key].length >= maxLength) {
-                errors[key] = `This field should not exceed ${maxLength} characters.`;
-            } else if ((key === 'firstName' || key === 'lastName') && !nameRegex.test(formData[key])) {
-                errors[key] = 'Only alphabets are allowed';
-            } else if (key === 'email' && !emailRegex.test(formData[key])) {
-                errors[key] = 'Please enter a valid email address';
-            }
-            // else if (key === 'companyName' && !companyNameRegex.test(formData[key])) {
-            //     errors[key] = 'Company name should not contain special characters';
-            // }
-        });
-
-
-        setFormErrors(errors);
-        return Object.keys(errors).length === 0;
-    }
-    const handleNextStep = () => {
-        if (validateForm()) {
-            setCurrentStep(3);
-        }
-    };
-
-    // const isMultiSelect = questionsData[currentQuestionIndex]?.multiSelect;
-
-
-
-    const [slots, setSlots] = useState([]);
-    const [selectedSlot, setSelectedSlot] = useState(null);
-    const [slotslength, selectedSlotslength] = useState(0)
-
-    const intervals = (startString, endString) => {
-        const start = moment(startString, 'hh:mm a');
-        const end = moment(endString, 'hh:mm a');
-        start.minutes(Math.ceil(start.minutes() / 30) * 30);
-
-        const timeSlots = [];
-
-        while (start <= end) {
-            timeSlots.push(start.format('hh:mm a'));
-            start.add(30, 'minutes');
-        }
-
-        return timeSlots;
-    };
-
-    // const date = new Date();
-    // const formattedTime = new Intl.DateTimeFormat('en-US', {
-    //     hour: 'numeric',
-    //     minute: 'numeric',
-    //     hour12: true
-    // }).format(date);
-
-    const val = value.$d;
-    const showDate = val.toDateString();
-
-    const formatSelectedSlot = (date, slot) => {
-        const startTime = moment(slot, 'hh:mm A');
-        const endTime = moment(startTime).add(30, 'minutes');
-
-        const formattedDate = moment(date).format('Do MMMM YYYY');
-        const formattedStartTime = startTime.format('h:mmA');
-        const formattedEndTime = endTime.format('h:mmA');
-
-        return `${formattedDate} | ${formattedStartTime} - ${formattedEndTime}`;
-    };
-
-    useEffect(() => {
-        const selectedDay = val.getDay(); // Get the day of the week
-        const selectedDate = moment(val);
-        const currentTime = moment();
-
-        //  const startOfDay = moment().set({ hour: 8, minute: 0, second: 0 }); 
-        const endOfDay = moment().set({ hour: 20, minute: 0, second: 0 }); // 8:00 PM
-
-        const updateAvailableSlots = () => {
-            let generatedSlots = [];
-
-            if (selectedDate.isSame(currentTime, 'day')) {
-                // If day is today
-                if (currentTime.isAfter(endOfDay)) {
-                    // If the current time is after 8:00 PM then empty slots
-                    setSlots([]);
-                } else {
-                    // For the remaining time of the day, calculate slots starting from the next available time
-                    const formattedCurrentTime = currentTime
-                        .add(1 - (currentTime.minute() % 30), 'minutes') // Round to next available slot
-                        .format('hh:mm A');
-                    generatedSlots = intervals(formattedCurrentTime, '08:00 PM');
-                }
-
-                // Clear the selected slot if it's today and in the past
-                if (
-                    selectedSlot &&
-                    moment(selectedSlot, 'hh:mm A').isBefore(currentTime)
-                ) {
-                    setSelectedSlot(null);
-                }
-            } else if (selectedDay === 0 || selectedDay === 6) {
-                // no slots for weekends
-                setSlots([]);
-            } else {
-                // For future days generating slots
-                generatedSlots = intervals('08:00 AM', '08:00 PM');
-            }
-
-            setSlots(generatedSlots);
-            selectedSlotslength(generatedSlots.length)
-            // console.log(slotslength)
-            // console.log(generatedSlots)
-        };
-
-        updateAvailableSlots();
-
-        const intervalId = setInterval(() => {
-            updateAvailableSlots();
-        }, 60000);
-
-        return () => clearInterval(intervalId);
-    }, [val, selectedSlot]);
-
-
-
-    const handleSlotSelection = (time) => {
-        if (slots.includes(time)) {
-            setSelectedSlot(time);
-        }
-    };
-
-    const progress = currentQuestionIndex > 0
-        ? ((currentQuestionIndex + 1) / questionsData.length) * 100
-        : 0
-
-    const getContainerStyles = () => {
-        if (!slots || slots.length === 0) {
-            return {
-                height: '80px',
-                width: '150px',
-                overflowY: 'hidden'
-            };
-        }
-
-        if (slots.length <= 3) {
-            return {
-                height: `${Math.max(80, slots.length * 60)}px`,
-                width: '180px',
-                overflowY: slots.length > 1 ? 'scroll' : 'hidden'
-            };
-        }
-
-        return {
-            height: '300px',
-            width: '200px',
-            overflowY: 'scroll'
-        };
-    };
-
-    const isCurrentQuestionAnswered = () => {
-        const currentQuestion = questionsData[currentQuestionIndex];
-
-        if (currentQuestion.multiSelect) {
-            return multiSelectAnswers[currentQuestion.id]?.length > 0;
-        } else if (currentQuestion.hasOther && selectedAnswers[currentQuestion.id] === "Others (Please Specify)") {
-            return otherText.trim() !== '';
-        } else {
-            return !!selectedAnswers[currentQuestion.id];
-        }
-    };
-
-    // const handleSubmitBooking = () => {
-    //     // For backend (need to see)
-    //     console.log("Form Data:", formData);
-    //     console.log("Selected Answers:", selectedAnswers);
-    //     console.log("Multi-Select Answers:", multiSelectAnswers);
-    //     console.log("Other Text:", otherText);
-    //     console.log("Selected Date:", showDate);
-    //     console.log("Selected Slot:", selectedSlot);
-
-    //     alert("Demo booking submitted successfully!");
-    // };
-
-    return (
-        <div className='w-full md:flex md:flex-col lg:flex-col xl:flex-row 2xl:flex-row justify-between mx-auto h-screen font-inter overflow-x-hidden'>
-            <div className='w-full left-container flex flex-col items-start'>
-                <div className='flex flex-col items-center lg:items-start w-full xl:ml-16 2xl:ml-16 md:gap-y-1 lg:gap-y-0'>
-                    <h1 className='heading text-[24px] md:text-[40px] lg:text-[54px] xl:text-[50px] 2xl:text-[64px] text-center md:text-center xl:text-start md:tracking-[-2.69px] md:mb-0 w-full'>Book your <span>30-minute </span></h1>
-                    <h1 className='font-medium text-[24px] md:mt-[-26px] xl:text-[50px] 2xl:text-[64px] mt-[-10px] sm:text-[28px] md:text-[40px] lg:text-[54px] xl:text-start text-center md:tracking-[-2.69px] w-full'>NexaStack demo.</h1>
-                </div>
-                <p className='mt-16 text-[#3E57DA] text-center xl:text-start ml-0 xl:ml-16 2xl:ml-16 tracking-[0.67px] w-full md:text-[20px] lg:text-[24px] xl:text-[24px] 2xl:text-[24px]'>WHAT TO EXPECT:</p>
-                <div className='xl:ml-16 2xl:ml-16 mt-8 space-y-2 md:space-y-3 flex items-center xl:items-start flex-col w-full text-[14px] md:text-[20px] lg:text-[24px] xl:text-[23px] 2xl:text-[18px]'>
-                    <div className='flex items-center gap-x-1 md:gap-x-3'>
-                        <img src={tick} alt='tick' /><p className='text-[#333B52] tracking-[-0.08px]'>Get a personalized demo of NexaStack</p>
-                    </div>
-                    <div className='flex items-center gap-x-1 md:gap-x-3 '>
-                        <img src={tick} alt='tick' />  <p className='text-[#333B52] tracking-[-0.08px]'>Learn about pricing for your use case</p>
-                    </div>
-                    <div className='flex items-center gap-x-1 md:gap-x-3'>
-                        <img src={tick} alt='tick' />
-                        <p className='text-[#333B52] tracking-[-0.08px]'>Hear proven customer success stories</p>
-                    </div>
-                </div>
-                <div className='flex flex-col md:flex md:flex-row mt-16 md:gap-x-12 xl:gap-x-2 2xl:gap-x-4 gap-y-5 items-center justify-center w-full md:items-start lg:ml-16 xl:ml-16 2xl:mt-20 2xl:ml-[68px] xl:justify-start xl:items-start'>
-                    <img src={grdp} alt='grdp' className='w-[170px] xl:w-[170px] 2xl:w-[160px]' />
-                    <img src={soc} alt='soc' className='w-[170px] xl:w-[170px] 2xl:w-[160px]' />
-                    <img src={iso} alt='iso' className='w-[220px] xl:w-[200px] xl:h-[22px] 2xl:w-[220px]' />
-                </div>
-                <div className='flex justify-center sm:text-start mt-10 md:mt-24 w-full xl:justify-start xl:ml-16'>
-                    <h3 className='text-[#333B52] text-[13px] md:text-[18.9px] 2xl:text-[18.9px] flex text-center'>Trusted by over Top AI companies of all size</h3>
-                </div>
-                <div className='lg:ml-14 md:mt-4 mt-10 mb-8 w-full xl:ml-5 2xl:ml-6 xl:px-2 2xl:px-0'>
-                    <div className='grid grid-cols-4 gap-x-0 sm:gap-x-10 xl:w-full xl:gap-x-0'>
-                        <img src={zoom} alt='zoom' className='' />
-                        <img src={reuters} alt='reuters' className='' />
-                        <img src={heineken} alt='heineken' className='' />
-                        <img src={reuters} alt='reuters' className='' />
-                    </div>
-                    <div className='grid grid-cols-4 gap-x-0 sm:gap-x-10 xl:gap-x-0'>
-                        <img src={zoom} alt='zoom' className='' />
-                        <img src={reuters} alt='reuters' className='' />
-                        <img src={heineken} alt='heineken' className='' />
-                        <img src={reuters} alt='reuters' className='' />
-                    </div>
-                </div>
-            </div>
-            <div className='right-container w-full'>
-                <div className='mt-20 flex items-center justify-center xl:justify-normal xl:ml-14 w-full'>
-                    <img src={logo} alt='comapny-logo' className='md:w-[200px] w-[140px] items-center' />
-                </div>
-
-                {/* Step 1 */}
-                {currentStep === 1 && (
-                    <div className='w-full'>
-                        <div className='customise-container items-center xl:items-start flex flex-col md:mt-20 mt-6 max-w-full'>
-                            <h1 className='md:text-[28px] lg:text-[32px] xl:text-[27px] flex justify-center md:justify-normal md:ml-16 xl:ml-12 w-full'>Customize your 30-Minute Demo</h1>
-                            <p className='text-[#727272] ml-0 px-1 items-center justify-center md:px-2 xl:px-4 md:ml-12 xl:ml-8 2xl:ml-8 flex md:items-start md:justify-normal md:text-[20px] lg:text-[24px] text-[18px] xl:text-[20px] font-normal w-full'>Setup your primary focus and customize the demo accordingly.</p>
-                        </div>
-                        <div className='w-full max-w-full px-4 md:px-8 xl:px-8 2xl:px-10'>
-                            <ProgressBar
-                                bgcolor="#0066FF"
-                                progress={Math.round(progress)}
-                                height={9}
-                            />
-                        </div>
-                        <div className="w-full mt-14">
-                            <div key={questionsData[currentQuestionIndex].id} className="mb-6 flex flex-col items-start mx-auto">
-                                <motion.div
-                                    initial="hidden"
-                                    animate="visible"
-                                    variants={optionVariants}
-                                    className='delay-100 transition duration-150 ease-in-out'
-                                >
-                                    {questionsData[currentQuestionIndex] && (
-                                        <h2 className="font-semibold mb-2 text-start px-4 xl:px-2 md:ml-8 xl:ml-12 text-[16px] md:text-[22px] lg:text-[28px] xl:text-[22px] 2xl:text-[22px] text-[#000000]">
-                                            {questionsData[currentQuestionIndex].text} <StyledSpan>*</StyledSpan>
-                                        </h2>
-                                    )}
-
-                                </motion.div>
-                                <div className="flex flex-wrap gap-4 md:gap-6 md:gap-y-8 justify-start items-center px-2 md:px-0 xl:justify-normal lg:ml-6 xl:ml-12 my-6 lg:text-[15px] max-w-full">
-                                    {questionsData[currentQuestionIndex]?.options?.map((option) => {
-                                        const isMultiSelect = questionsData[currentQuestionIndex]?.multiSelect || false;
-                                        const currentQuestionId = questionsData[currentQuestionIndex]?.id || 0;
-
-                                        const isSelected = isMultiSelect
-                                            ? multiSelectAnswers[currentQuestionId]?.includes(option) || false
-                                            : selectedAnswers[currentQuestionId] === option || false;
-
-                                        return (
-                                            <motion.div
-                                                key={option || "unknown-option"}
-                                                initial="hidden"
-                                                animate="visible"
-                                                variants={optionVariants}
-                                                className='delay-100 transition duration-150 ease-in-out'
-                                            >
-                                                <button
-                                                    className={`px-4 py-2 md:px-8 md:py-3 lg:px-7 xl:px-7 2xl:px-8 rounded-full border font-normal text-[14px] md:ml-2 lg:ml-0 md:text-[18px] xl:text-[16px] 2xl:text-sm
-                    ${isSelected ? "btn-option" :
-                                                            pendingAnswer?.option === option ? "btn-option" :
-                                                                "bg-[#F6F6F6]"}`}
-                                                    onClick={() => handleAnswer(currentQuestionId, option)}
-                                                    disabled={pendingAnswer !== null && !isSelected && selectedAnswers[currentQuestionId]}
-                                                >
-                                                    {option || "Option not available"}
-                                                </button>
-                                            </motion.div>
-                                        );
-                                    })}
-
-                                </div>
-                                {questionsData?.[currentQuestionIndex]?.id === 6 &&
-                                    selectedAnswers?.[6] === "Others (Please Specify)" && (
-                                        <div className="w-full space-x-0 md:space-x-10 mb-6 px-2 md:px-14 flex flex-col md:flex-row items-center">
-                                            {savedText ? (
-                                                <h1 className="mx-auto px-2 text-gray-700 font-semibold break-words w-full text-start md:text-center xl:text-end max-w-lg ">
-                                                    {savedText || "No additional text provided"}
-                                                </h1>
-                                            ) : (
-                                                <input
-                                                    maxLength={100}
-                                                    type="text"
-                                                    className="lg:w-full w-60 max-w-lg p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#0066FF]"
-                                                    placeholder="Please specify your use case"
-                                                    value={otherText || ""}
-                                                    onChange={handleOtherTextChange}
-                                                />
-                                            )}
-                                            {!savedText && (
-                                                <button
-                                                    className={`lg:mb-10 w-[200px] btn-save mt-2 px-4 ${otherText?.trim() ? '' : 'opacity-50 cursor-not-allowed'} items-center`}
-                                                    onClick={() => {
-                                                        if (otherText?.trim()) {
-                                                            setSavedText(otherText?.trim()); // Save the text
-                                                            setSelectedAnswers(prev => ({
-                                                                ...prev,
-                                                                6: "Others (Please Specify)",
-                                                            }));
-                                                            setIsNextEnabled(true)
-                                                        }
-                                                    }}
-                                                    disabled={!otherText?.trim()}
-                                                >
-                                                    Save & Continue
-                                                </button>
-                                            )}
-
-                                        </div>
-                                    )}
-
-
-                            </div>
-                        </div>
-
-                        <div className='xl:fixed xl:bottom-0 xl:right-0 flex justify-end gap-x-4 md:gap-x-2 items-center mt-10 lg:mx-2 px-2 py-2'>
-                            <button
-                                className={`btn-next1 flex gap-x-2 md:gap-x-6 md:w-48 w-42 text-[14px] items-center font-normal md:text-[16px] 2xl:text-[18px] ${currentQuestionIndex === 0 ? 'opacity-50 cursor-not-allowed text-gray-400' : 'text-[#0066FF]'} font-semibold`}
-                                onClick={handlePrevious}
-                                disabled={currentQuestionIndex === 0}
-                            >
-                                <img src={arrow} alt='arrow' /> Previous
-                            </button>
-
-                            <button
-
-                                className={`  btn-next flex gap-x-2 md:gap-x-6 items-center font-semibold text-[14px] md:text-[16px] 2xl:text-[18px] ${!isNextEnabled && !isLastQuestionAnswered && !questionsData[currentQuestionIndex]?.multiSelect ? 'opacity-50 cursor-not-allowed' : ''} font-semibold`}
-                                onClick={handleNext}
-                                disabled={!isCurrentQuestionAnswered() && !isLastQuestionAnswered && isNextEnabled}
-                            >
-                                Next Step <img src={arrow} alt='arrow' />
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {/* Step 2 */}
-                {currentStep === 2 && (
-                    <div className='flex items-center w-full flex-col md:items-start'>
-                        <div className='customise-container items-start flex flex-col md:px-10 mt-6 md:mt-20'>
-                            <h1 className='md:text-[32px] flex mx-auto md:ml-0'>Your Information</h1>
-                            <p className='text-[#727272] w-full md:text-start md:w-full md:text-[22px] lg:text-[24px] font-normal'>Please provide your information and schedule the demo seamlessly.</p>
-                        </div>
-                        <div className='flex flex-col md:flex-row m-0 md:m-10 w-11/12 space-y-4 md:space-y-0 md:space-x-14 lg:space-x-16 xl:space-x-14 mt-10 2xl:gap-x-4'>
-                            <div className='flex flex-col items-start w-full md:w-1/2'>
-                                <label>
-                                    First Name <StyledSpan>*</StyledSpan>
-                                </label>
-                                <input
-                                    maxLength={50}
-                                    className={`p-2 md:px-3 rounded-lg border w-full mt-2 focus:outline-none ${formErrors.firstName ? 'border-red-500' : 'border-[#465FF166]'}`}
-                                    type="text"
-                                    name="firstName"
-                                    value={formData.firstName}
-                                    onChange={handleInputChange}
-                                    autoComplete="off"
-                                    placeholder="Please enter your First Name"
-                                />
-                                {formErrors.firstName && (
-                                    <p className='text-red-500 text-sm mt-1'>{formErrors.firstName}</p>
-                                )}
-                            </div>
-                            <div className='flex flex-col items-start w-full md:w-1/2'>
-                                <label>
-                                    Last Name <StyledSpan>*</StyledSpan>
-                                </label>
-                                <input
-                                    maxLength={50}
-                                    className={`p-2 md:px-3 rounded-lg border w-full mt-2 focus:outline-none ${formErrors.lastName ? 'border-red-500' : 'border-[#465FF166]'}`}
-                                    type="text"
-                                    name="lastName"
-                                    value={formData.lastName}
-                                    onChange={handleInputChange}
-                                    autoComplete="off"
-                                    placeholder="Please enter your Last Name"
-                                />
-                                {formErrors.lastName && (
-                                    <p className='text-red-500 text-sm mt-1'>{formErrors.lastName}</p>
-                                )}
-                            </div>
-                        </div>
-                        <div className='flex flex-col md:flex-row mt-3 md:m-10 w-11/12 space-y-4 md:space-y-0 md:space-x-14 lg:space-x-16 xl:space-x-14 2xl:gap-x-4 md:mt-0'>
-                            <div className='flex flex-col items-start w-full md:w-1/2'>
-                                <label>
-                                    Business Email ID <StyledSpan>*</StyledSpan>
-                                </label>
-                                <input
-                                    className={`p-2 md:px-3 rounded-lg border w-full mt-2 focus:outline-none ${formErrors.email ? 'border-red-500' : 'border-[#465FF166]'}`}
-                                    type="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleInputChange}
-                                    autoComplete="off"
-                                    placeholder="Please enter your email id"
-                                />
-                                {formErrors.email && (
-                                    <p className='text-red-500 text-sm mt-1'>{formErrors.email}</p>
-                                )}
-                            </div>
-                            <div className='flex flex-col items-start w-full md:w-1/2'>
-                                <label>
-                                    Country<StyledSpan>*</StyledSpan>
-                                </label>
-                                <select
-                                    className={`scrollbar-hide p-2 py-3 md:px-2 w-full rounded-lg border mt-2 bg-white focus:outline-none text-black ${formErrors.country ? 'border-red-500' : 'border-[#465FF166]'}`}
-                                    name="country"
-                                    value={formData.country}
-                                    onChange={handleInputChange}
-                                >
-                                    <option value="" className='text-[#9C9AA5]'>Select your Country</option>
-                                    {countries.map((count) => (
-                                        <option key={count.value} value={count.value}>
-                                            {count.label}
-                                        </option>
-                                    ))}
-                                </select>
-                                {formErrors.country && (
-                                    <p className='text-red-500 text-sm mt-1'>{formErrors.country}</p>
-                                )}
-                            </div>
-                        </div>
-                        <div className='flex flex-col w-11/12 gap-y-5 md:ml-10 md:gap-y-10 mt-5 md:mt-0'>
-                            <div className='flex flex-col items-start w-full md:w-full'>
-                                <label>
-                                    Industry Belongs To <StyledSpan>*</StyledSpan>
-                                </label>
-                                <select
-                                    className={`scrollbar-hide p-2 py-3 md:px-2 w-full rounded-lg border mt-2 bg-white focus:outline-none text-black ${formErrors.industry ? 'border-red-500' : 'border-[#465FF166]'}`}
-                                    name="industry"
-                                    value={formData.industry}
-                                    onChange={handleInputChange}
-                                >
-                                    <option value="" className='text-[#9C9AA5]'>Select your Industry type</option>
-                                    {IndustryList.map((ind) => (
-                                        <option key={ind.value} value={ind.value}>
-                                            {ind.label}
-                                        </option>
-                                    ))}
-                                </select>
-                                {formErrors.industry && (
-                                    <p className='text-red-500 text-sm mt-1'>{formErrors.industry}</p>
-                                )}
-                            </div>
-                            <div className='flex flex-col items-start w-full md:w-full'>
-                                <label>
-                                    Department / Team <StyledSpan>*</StyledSpan>
-                                </label>
-                                <select
-                                    className={`p-2 py-3 md:px-2 w-full rounded-lg border mt-2 bg-white focus:outline-none text-black ${formErrors.department ? 'border-red-500' : 'border-[#465FF166]'}`}
-                                    name="department"
-                                    value={formData.department}
-                                    onChange={handleInputChange}
-                                >
-                                    <option value="" className='text-[#9C9AA5]'>Select your department/ team</option>
-                                    {dept.map((dept) => (
-                                        <option key={dept.value} value={dept.value}>
-                                            {dept.label}
-                                        </option>
-                                    ))}
-                                </select>
-                                {formErrors.department && (
-                                    <p className='text-red-500 text-sm mt-1'>{formErrors.department}</p>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className='xl:fixed xl:bottom-0 xl:right-0 text-white mb-2 flex justify-end items-center mt-10 w-full xl:mt-0 md:mt-8 gap-x-3 lg:mr-4 px-2 xl:px-0 '>
-                            <button
-
-                                className={`btn-next1 flex gap-x-2 md:gap-x-6 md:w-48 w-42 items-center text-[14px] md:text-[16px] 2xl:text-[18px] font-semibold`}
-                                onClick={handlePreviousStep}
-                            >
-                                <img src={arrow} alt='arrow' /> Previous
-                            </button>
-                            <button
-
-                                className='btn-next flex gap-x-2 md:gap-x-6 items-center font-semibold text-[14px] md:text-[16px] 2xl:text-[18px]'
-                                onClick={handleNextStep}
-                            >
-                                Next Step <img src={arrow} alt='arrow' />
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {/* Step 3 */}
-                {currentStep === 3 && (
-                    <div className='w-full'>
-                        <div className='customise-container items-start flex flex-col mt-6 md:mt-20'>
-                            <h1 className='md:text-[32px] flex mx-auto md:ml-12'>Book Demo</h1>
-                            <p className='text-[#727272] flex md:ml-12 md:w-full md:text-[24px] font-normal mx-auto'>Please pick your suitable date and time slot for the demo.</p>
-                        </div>
-                        <div className='flex mt-10 items-center'>
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <div className="flex flex-col md:flex-row items-center justify-between w-full mx-auto ml-0 xl:mr-14">
-                                    {isDesktop ? (
-                                        <DateCalendar
-                                            value={value}
-                                            onChange={(newValue) => setValue(newValue)}
-                                            disablePast
-                                            // dayOfWeekFormatter={(day) => {
-                                            //     const abbreviatedDays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-                                            //     return abbreviatedDays[day]; // Map day index (0-6) to weekday names
-                                            // }}
-                                            className="w-full md:max-w-lg max-w-sm"
-                                            sx={{
-                                                width: '390px',
-                                                '& .MuiPickersCalendarHeader-label': {
-                                                    fontSize: '24px',
-                                                    fontWeight: 'bold !important',
-                                                },
-                                                // '& .MuiDayCalendar-header': {
-                                                //     fontWeight: 'bold !important', // Bold weekdays
-                                                //     color: 'black !important',
-                                                // },
-                                                '& .MuiPickersDay-root': {
-                                                    marginX: '28px',
-                                                    // gap:"45px",
-                                                    fontWeight: 'bold !important',
-                                                    color: 'black !important',
-                                                    '&:hover': {
-                                                        backgroundColor: '#E6F2FF',
-                                                    },
-                                                },
-                                                '& .MuiPickersCalendarHeader-switchViewButton': {
-                                                    display: 'none',
-                                                },
-                                                '& .MuiDayCalendar-weekContainer': {
-                                                    justifyContent: 'center',
-                                                },
-                                                '& .MuiPickersDay-root:not(.MuiPickersDay-weekend)': {
-                                                    marginX: '10px',
-                                                },
-                                                '& .MuiDayCalendar-header': {
-                                                    fontWeight: 'bold !important',
-                                                    color: 'black !important',
-                                                    gap: '17px',
-                                                    fontSize: '24px',
-                                                },
-                                                // '& .MuiPickersCalendarHeader-label': {
-                                                //     fontSize: '24px',
-                                                // },
-                                                '& .MuiPickersArrowSwitcher-root': {
-                                                    marginRight: '80px'
-                                                },
-                                                '& .Mui-selected': {
-                                                    backgroundColor: '#FB3F4A !important',
-                                                    color: 'white !important',
-                                                    '&:hover': {
-                                                        backgroundColor: '#FF3333 !important',
-                                                    },
-                                                },
-                                            }}
-                                        />
-
-
-                                    ) : (
-                                        <DateCalendar
-                                            disablePast
-                                            onChange={(newValue) => setValue(newValue)}
-                                            className="w-full md:max-w-lg max-w-sm"
-                                            sx={{
-                                                width: '280px',
-                                                height: '450px',
-                                                '& .MuiPickersDay-root': {
-                                                    marginX: '3px',
-                                                    '&:hover': {
-                                                        backgroundColor: '#E6F2FF',
-                                                    },
-                                                },
-                                                '& .MuiPickersCalendarHeader-switchViewButton': {
-                                                    display: 'none',
-                                                },
-                                                // '& .MuiDayCalendar-weekContainer': {
-                                                //     justifyContent: 'center',
-                                                // },
-                                                // '& .MuiPickersDay-root:not(.MuiPickersDay-weekend)': {
-                                                //     marginX: '0px',
-                                                // },
-                                                // "& .MuiDayCalendar-header":{
-                                                //     marginRight:'10px',
-                                                // },
-                                                '& .MuiPickersCalendarHeader-label': {
-                                                    fontSize: '20px',
-                                                    width: "100%"
-                                                    // marginLeft: '0px'
-                                                },
-                                                '& .Mui-selected': {
-                                                    backgroundColor: '#FB3F4A !important',
-                                                    color: 'white !important',
-                                                    '&:hover': {
-                                                        backgroundColor: '#FF3333 !important',
-                                                    },
-                                                },
-                                            }}
-                                        />
-                                    )}
-                                    <div className="md:h-[400px] w-[2px] bg-gray-100 ml-12 md:ml-1 lg:ml-16 xl:ml-0 2xl:ml-12 "></div>
-                                    <div className='flex flex-col items-center w-7/12 md:w-5/12 lg:w-6/12 xl:w-4/12 2xl:w-5/12'>
-                                        {/* do changes in aove div item center if large space between calendar and slots */}
-                                        <div className='w-full max-w-[300px] md:mb-4 flex flex-col'>
-                                            <h2 className='text-[18px] md:text-2xl font-semibold text-gray-700 mb-7 mt-4 md:mt-0'>
-                                                Available Time Slots
-                                            </h2>
-                                            <div className='overflow-hidden flex items-center mx-auto'>
-                                                <div style={getContainerStyles()}>
-                                                    {slots && slots.length > 0 ? (
-                                                        <div className='space-y-6 p-2'>
-                                                            {slots.map((time, index) => (
-                                                                <button
-                                                                    key={index}
-                                                                    className={`w-full py-3 text-center rounded-xl border hover:bg-[#093179] hover:text-white transition-colors duration-200 ${selectedSlot === time
-                                                                        ? 'bg-[#093179] text-white'
-                                                                        : 'bg-white text-black'
-                                                                        }`}
-                                                                    onClick={() => handleSlotSelection(time)}
-                                                                >
-                                                                    {time}
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                    ) : (
-                                                        <div className='text-center py-4 text-gray-500'>
-                                                            No time slots available
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </LocalizationProvider>
-
-                        </div>
-                        <div className='flex flex-col items-center md:items-start text-[18px] md:text-[16px] md:ml-10 mt-10 md:mt-16'>
-                            <p className='text-[#666666]'>Demo Scheduling</p>
-                            <p className='text-[#333333] font-medium md:text-[22px] text-[18px] '>
-                                {selectedSlot ? formatSelectedSlot(showDate, selectedSlot) : ''}
-                            </p>
-                            <p className='text-[14px]'>Timezone: GMT+5:30 India/Asia</p>
-                        </div>
-                        <div className='xl:fixed xl:bottom-0 xl:right-0 text-white mb-2 flex justify-center items-center md:justify-end mt-10 md:-mt-4 gap-x-2 px-2 lg:mx-2'>
-                            <button
-                                className={`btn-next1 flex gap-x-2 md:gap-x-6 md:w-48 w-42 items-center text-[14px] md:text-[16px] 2xl:text-[18px] font-semibold`}
-                                onClick={handlePreviousStep}
-                            >
-                                <img src={arrow} alt='arrow' /> Previous
-                            </button>
-                            <button className='btn-next flex gap-x-2 md:gap-x-6 items-center font-semibold text-[13px] md:text-[16px] 2xl:text-[18px]'>
-                                Book Demo <img src={arrow} alt='arrow' />
-                            </button>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
-    )
-}
-
-export default BookDemo
-
-const optionVariants = {
-    hidden: { opacity: 0 },
-    visible: (index) => ({
-        opacity: 1,
-        x: 0,
-        transition: {
-            type: "tween",
-            ease: "easeInOut",
-            duration: 1.2,
-            delay: index * 0.15
-        }
-    })
-
-};
-
 const countryTimezoneMap = {
     Afghanistan: "GMT+4:30 Asia/Kabul",
     Albania: "GMT+2:00 Europe/Tirane",
@@ -1380,3 +471,1062 @@ const countryTimezoneMap = {
     Zambia: "GMT+2:00 Africa/Lusaka",
     Zimbabwe: "GMT+2:00 Africa/Harare",
 }
+
+const BookDemo = () => {
+    const [userTimezone, setUserTimezone] = useState("GMT+5:30 India/Asia"); // Default to Indian timezone
+    const [timezoneOffset, setTimezoneOffset] = useState(0); // Difference in minutes between user timezone and IST
+    var todayDate = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    // console.log(todayDate);
+    const isDesktop = useMediaQuery('(min-width:768px)');
+    const [value, setValue] = React.useState(dayjs(todayDate));
+    const [selectedAnswers, setSelectedAnswers] = useState({});
+    const [multiSelectAnswers, setMultiSelectAnswers] = useState({});
+    const [otherText, setOtherText] = useState('');
+    const [currentStep, setCurrentStep] = useState(1);
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    const [pendingAnswer, setPendingAnswer] = useState(null);
+    const [isLastQuestionAnswered, setIsLastQuestionAnswered] = useState(false);
+    const [answeredQuestions, setAnsweredQuestions] = useState([]);
+    const [isNextEnabled, setIsNextEnabled] = useState(false);
+    const [showOtherInput, setShowOtherInput] = useState(false); // Multi selection ke liye
+    // const [savedText, setSavedText] = useState('')
+    // const [otherInputValue, setOtherInputValue] = useState('');// Specify Other input value ke liye
+    // const [activeOptionAnimation, setActiveOptionAnimation] = useState(false);//Animation normal
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        country: '',
+        industry: '',
+        department: ''
+    });
+    const [formErrors, setFormErrors] = useState({});
+
+    // Handling selection of an answer
+    const handleAnswer = useCallback((questionId, option) => {
+        const currentQuestion = questionsData.find(q => q.id === questionId);
+
+        if (!currentQuestion) return; // Ensure valid question data exists
+
+        if (currentQuestion.multiSelect) {
+            // Handling multi-select questions
+            setMultiSelectAnswers(prev => {
+                const selections = prev[questionId] || [];
+
+                if (selections.includes(option)) {
+                    return { ...prev, [questionId]: selections.filter(item => item !== option) };
+                } else {
+                    // Adding new selection
+                    return { ...prev, [questionId]: [...selections, option] };
+                }
+            });
+
+            // Mark question as answered
+            if (!answeredQuestions.includes(currentQuestionIndex)) {
+                setAnsweredQuestions(prev => [...prev, currentQuestionIndex]);
+            }
+        } else if (currentQuestion.hasOther && option === "Other (Please Specify)") {
+            // Handling "Others" option
+            setSelectedAnswers(prev => ({
+                ...prev,
+                [questionId]: option
+            }));
+            setOtherText('');
+            setShowOtherInput(true);
+
+            // Mark question as answered
+            if (!answeredQuestions.includes(currentQuestionIndex)) {
+                setAnsweredQuestions(prev => [...prev, currentQuestionIndex]);
+            }
+        } else {
+            // Smooth selection handling with animation
+            setPendingAnswer({ questionId, option });
+
+            setTimeout(() => {
+                setSelectedAnswers(prev => ({
+                    ...prev,
+                    [questionId]: option
+                }));
+
+                if (!answeredQuestions.includes(currentQuestionIndex)) {
+                    setAnsweredQuestions(prev => [...prev, currentQuestionIndex]);
+                }
+
+                setPendingAnswer(null);
+
+                // Do not auto-advance to next question—wait for "Next Step" button
+            }, 100);
+        }
+        // eslint-disable-next-line
+    }, [currentQuestionIndex, answeredQuestions, multiSelectAnswers]);
+
+
+
+    const handleOtherTextChange = (e) => {
+        setOtherText(e.target.value);
+    };
+
+    const handlePrevious = () => {
+        if (currentQuestionIndex > 0) {
+            // Add a slight delay for animation
+            // setActiveOptionAnimation(true);
+            setTimeout(() => {
+                setCurrentQuestionIndex(prev => prev - 1);
+                //  setActiveOptionAnimation(false);
+
+                // Clear "Other" input if moving back from question 6
+                if (currentQuestionIndex === 6 && showOtherInput) {
+                    setShowOtherInput(false);
+                }
+            }, 100);
+        }
+    };
+    const handlePreviousStep = () => {
+        setCurrentStep(prev => prev - 1);
+    };
+    const handleNext = () => {
+        // Check if all questions are answered
+        const allQuestionsAnswered = answeredQuestions.length === questionsData.length;
+
+        if (allQuestionsAnswered) {
+            // Move to Step 2 if all questions are answered
+            setCurrentStep(2);
+        } else if (isCurrentQuestionAnswered()) {
+            // Move to the next question
+            setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
+        } else {
+            // Alert the user to answer the current question
+            alert("Please answer the current question before proceeding.");
+        }
+    };
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+
+        // Clearing errors when user starts typing
+        if (formErrors[name]) {
+            setFormErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }));
+        }
+
+        // Handle name validation
+        if (name === 'firstName' || name === 'lastName') {
+            const maxLength = 50;
+            if (value.length >= maxLength) {
+                setFormErrors(prev => ({
+                    ...prev,
+                    [name]: `This field should not exceed ${maxLength} characters.`
+                }));
+            }
+            const regex = /^[a-zA-Z\s]+$/;
+            if (!regex.test(value) && value.length > 0) {
+                setFormErrors(prev => ({
+                    ...prev,
+                    [name]: 'Only English alphabets are allowed.'
+                }));
+            }
+        }
+
+        // Set timezone when country is selected
+        if (name === 'country' && value) {
+            const selectedTimezone = countryTimezoneMap[value] || "GMT+5:30 India/Asia";
+            setUserTimezone(selectedTimezone);
+
+            // Calculate offset between IST and selected timezone
+            calculateTimezoneOffset(selectedTimezone);
+        }
+    };
+    const calculateTimezoneOffset = (timezoneString) => {
+        // Parse the GMT offset from the timezone string (e.g., "GMT+4:30 Asia/Kabul")
+        const gmtMatch = timezoneString.match(/GMT([+-])(\d+):(\d+)/);
+
+        if (!gmtMatch) {
+            setTimezoneOffset(0);
+            return;
+        }
+
+        const sign = gmtMatch[1] === '+' ? 1 : -1;
+        const hours = parseInt(gmtMatch[2]);
+        const minutes = parseInt(gmtMatch[3]);
+
+        // Calculate total minutes offset
+        const userOffset = sign * (hours * 60 + minutes);
+
+        // IST is GMT+5:30 = +330 minutes
+        const istOffset = 330;
+
+        // Difference between user timezone and IST
+        setTimezoneOffset(userOffset - istOffset);
+    };
+
+    const validateForm = () => {
+        const errors = {};
+        const nameRegex = /^[a-zA-Z]+$/;
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,}$/;
+        // const companyNameRegex = /^[a-zA-Z0-9\s]+$/;
+        const maxLength = 50;
+
+        Object.keys(formData).forEach(key => {
+            if (!formData[key].trim()) {
+                errors[key] = 'This field is required';
+            } else if ((key === 'firstName' || key === 'lastName') && formData[key].length >= maxLength) {
+                errors[key] = `This field should not exceed ${maxLength} characters.`;
+            } else if ((key === 'firstName' || key === 'lastName') && !nameRegex.test(formData[key])) {
+                errors[key] = 'Only alphabets are allowed';
+            } else if (key === 'email' && !emailRegex.test(formData[key])) {
+                errors[key] = 'Please enter a valid email address';
+            }
+            // else if (key === 'companyName' && !companyNameRegex.test(formData[key])) {
+            //     errors[key] = 'Company name should not contain special characters';
+            // }
+        });
+
+
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    }
+    const handleNextStep = () => {
+        if (validateForm()) {
+            setCurrentStep(3);
+        }
+    };
+
+    // const isMultiSelect = questionsData[currentQuestionIndex]?.multiSelect;
+
+
+
+    const [slots, setSlots] = useState([]);
+    const [selectedSlot, setSelectedSlot] = useState(null);
+    // const [slotslength, selectedSlotslength] = useState(0)
+
+    const intervals = (startString, endString) => {
+        // These are in IST
+        const istStart = moment(startString, 'hh:mm a');
+        const istEnd = moment(endString, 'hh:mm a');
+
+        istStart.minutes(Math.ceil(istStart.minutes() / 30) * 30);
+
+        const timeSlots = [];
+
+        while (istStart <= istEnd) {
+            // Convert ist time to client local time
+            const localTime = moment(istStart).add(timezoneOffset, 'minutes');
+
+            timeSlots.push({
+                istTime: istStart.format('hh:mm a'), // SOrginal ist
+                localTime: localTime.format('hh:mm a') // local time of client
+            });
+
+            istStart.add(30, 'minutes');
+        }
+
+        return timeSlots;
+    };
+
+
+    // const date = new Date();
+    // const formattedTime = new Intl.DateTimeFormat('en-US', {
+    //     hour: 'numeric',
+    //     minute: 'numeric',
+    //     hour12: true
+    // }).format(date);
+
+    const val = value.$d;
+    const showDate = val.toDateString();
+
+    // The dates which are selected they are formatted with these functions
+    const formatSelectedSlot = (date, slot) => {
+        if (!slot) return '';
+
+        const startTimeLocal = moment(slot.localTime, 'hh:mm A');
+        const endTimeLocal = moment(startTimeLocal).add(30, 'minutes');
+
+        // const startTimeIST = moment(slot.istTime, 'hh:mm A');
+        // const endTimeIST = moment(startTimeIST).add(30, 'minutes');
+
+        const formattedDate = moment(date).format('Do MMMM YYYY');
+        const formattedStartTimeLocal = startTimeLocal.format('h:mmA');
+        const formattedEndTimeLocal = endTimeLocal.format('h:mmA');
+
+        // const formattedStartTimeIST = startTimeIST.format('h:mmA');
+        // const formattedEndTimeIST = endTimeIST.format('h:mmA');
+
+        return `${formattedDate} | ${formattedStartTimeLocal} - ${formattedEndTimeLocal} (${userTimezone})`;
+    };
+    const getISTTimeDisplay = (slot) => {
+        if (!slot) return '';
+
+        const startTimeIST = moment(slot.istTime, 'hh:mm A');
+        const endTimeIST = moment(startTimeIST).add(30, 'minutes');
+
+        const formattedStartTimeIST = startTimeIST.format('h:mmA');
+        const formattedEndTimeIST = endTimeIST.format('h:mmA');
+
+        return `${formattedStartTimeIST} - ${formattedEndTimeIST} (GMT+5:30 India/Asia)`;
+    };
+
+    useEffect(() => {
+        const selectedDay = val.getDay();
+
+        // Converting selected date to Indian time
+        const selectedDateLocal = moment(val);
+        const selectedDateIST = moment(selectedDateLocal).subtract(timezoneOffset, 'minutes');
+
+        // Current time (for past)
+        const currentTimeIST = moment().utcOffset(330);
+
+        // Business hours in IST (8:30 to 8:30 for Indian)
+        // const istStartOfDay = moment().utcOffset(330).set({ hour: 8, minute: 0, second: 0 });
+        const istEndOfDay = moment().utcOffset(330).set({ hour: 20, minute: 0, second: 0 });
+
+        const updateAvailableSlots = () => {
+            let generatedSlots = [];
+
+            if (selectedDateIST.isSame(currentTimeIST, 'day')) {
+                // Today in IST timezone
+                if (currentTimeIST.isAfter(istEndOfDay)) {
+                    setSlots([]);
+                } else {
+                    const formattedCurrentTimeIST = moment(currentTimeIST)
+                        .add(1 - (currentTimeIST.minute() % 30), 'minutes')
+                        .format('hh:mm A');
+                    generatedSlots = intervals(formattedCurrentTimeIST, '08:00 PM');
+                }
+
+                //Clear the selected slot if it's today and in the past
+                if (selectedSlot &&
+                    moment(selectedSlot.istTime, 'hh:mm A').isBefore(currentTimeIST)) {
+                    setSelectedSlot(null);
+                }
+            } else if (selectedDay === 0 || selectedDay === 6) {
+                setSlots([]);
+            } else {
+                // For future days generating slots for full business hours
+                generatedSlots = intervals('08:00 AM', '08:00 PM');
+            }
+
+            setSlots(generatedSlots);
+            // selectedSlotslength(generatedSlots.length);
+        };
+
+        updateAvailableSlots();
+
+        const intervalId = setInterval(() => {
+            updateAvailableSlots();
+        }, 60000);
+
+        return () => clearInterval(intervalId);
+        // eslint-disable-next-line
+    }, [val, selectedSlot, timezoneOffset]);
+
+
+
+    const handleSlotSelection = (slot) => {
+        setSelectedSlot(slot);
+    };
+
+    const progress = currentQuestionIndex > 0
+        ? ((currentQuestionIndex + 1) / questionsData.length) * 100
+        : 0
+
+    const getContainerStyles = () => {
+        // Check if we're on a mobile device (could use a more robust check in a real app)
+        const isMobile = window.innerWidth < 768; // Common breakpoint for mobile
+
+        if (!slots || slots.length === 0) {
+            return {
+                height: isMobile ? '80px' : '260px', // 80px on phone, 300px otherwise
+                width: '150px',
+                overflowY: 'hidden'
+            };
+        }
+
+        if (slots.length <= 3) {
+            return {
+                height: `${Math.max(80, slots.length * 60)}px`,
+                width: '180px',
+                overflowY: slots.length > 1 ? 'scroll' : 'hidden'
+            };
+        }
+
+        return {
+            height: '260px',
+            width: '200px',
+            overflowY: 'scroll'
+        };
+    };
+
+    const isCurrentQuestionAnswered = () => {
+        const currentQuestion = questionsData?.[currentQuestionIndex];
+
+        if (!currentQuestion) return false;
+
+        if (currentQuestion.multiSelect) {
+            return multiSelectAnswers?.[currentQuestion.id]?.length > 0;
+        } else if (currentQuestion.hasOther && selectedAnswers?.[currentQuestion.id] === "Other (Please Specify)") {
+            return otherText?.trim() !== "";
+        } else {
+            return !!selectedAnswers?.[currentQuestion.id];
+        }
+    };
+    useEffect(() => {
+        setIsNextEnabled(isCurrentQuestionAnswered());
+    }, [selectedAnswers, multiSelectAnswers, otherText, currentQuestionIndex]);
+
+    // const handleSubmitBooking = () => {
+    //     // For backend (need to see)
+    //     console.log("Form Data:", formData);
+    //     console.log("Selected Answers:", selectedAnswers);
+    //     console.log("Multi-Select Answers:", multiSelectAnswers);
+    //     console.log("Other Text:", otherText);
+    //     console.log("Selected Date:", showDate);
+    //     console.log("Selected Slot:", selectedSlot);
+
+    //     alert("Demo booking submitted successfully!");
+    // };
+
+    return (
+        <div className='w-full md:flex md:flex-col lg:flex-col xl:flex-row 2xl:flex-row justify-between mx-auto h-screen font-inter overflow-x-hidden'>
+            <div className='relative w-full flex flex-col items-start bg-cover bg-center bg-no-repeat'>
+                {/* Background Image */}
+                <img
+                    src={background}
+                    alt="background"
+                    className="absolute top-0 left-0 w-full h-full object-cover -z-10"
+                />
+                {/* Heading Section */}
+                <div className='flex flex-col items-center lg:items-start w-full xl:ml-16 2xl:ml-16 md:gap-y-1 lg:gap-y-0'>
+                    <h1 className='heading font-medium mt-[66px] text-[24px] md:text-[40px] lg:text-[54px] xl:text-[50px] 2xl:text-[54px] text-center md:text-center xl:text-start md:tracking-[-2.69px] md:mb-0 w-full '>
+                        Book your <span>30-minute </span>
+                    </h1>
+                    <h1 className='font-medium text-[24px] md:mt-[-26px] xl:text-[50px] 2xl:text-[54px] mt-[-10px] sm:text-[28px] md:text-[40px] lg:text-[54px] xl:text-start text-center md:tracking-[-2.69px] w-full'>
+                        NexaStack demo.
+                    </h1>
+                </div>
+
+                {/* What to Expect Section */}
+                <p className='mt-16 text-[#3E57DA] text-center xl:text-start ml-0 xl:ml-16 2xl:ml-16 tracking-[0.67px] w-full md:text-[20px] lg:text-[24px] xl:text-[24px] 2xl:text-[24px]'>WHAT TO EXPECT:</p>
+                <div className='xl:ml-16 2xl:ml-16 mt-8 space-y-2 md:space-y-3 flex items-center xl:items-start flex-col w-full text-[14px] md:text-[20px] lg:text-[24px] xl:text-[23px] 2xl:text-[18px]'>
+                    <div className='flex items-center gap-x-1 md:gap-x-3'>
+                        <img src={tick} alt='tick' /><p className='text-[#333B52] tracking-[-0.08px]'>Get a personalized demo of NexaStack</p>
+                    </div>
+                    <div className='flex items-center gap-x-1 md:gap-x-3 '>
+                        <img src={tick} alt='tick' />  <p className='text-[#333B52] tracking-[-0.08px]'>Learn about pricing for your use case</p>
+                    </div>
+                    <div className='flex items-center gap-x-1 md:gap-x-3'>
+                        <img src={tick} alt='tick' />
+                        <p className='text-[#333B52] tracking-[-0.08px]'>Hear proven customer success stories</p>
+                    </div>
+                </div>
+
+                {/* Certification Logos */}
+                <div className='flex flex-col md:flex-row mt-16 md:gap-x-12 xl:gap-x-2 2xl:gap-x-4 gap-y-5 items-center justify-center w-full md:items-start lg:ml-16 xl:ml-16 2xl:mt-20 2xl:ml-[68px] xl:justify-start'>
+                    <img src={grdp} alt='grdp' className='w-[170px] h-auto xl:w-[130px] 2xl:w-[160px]' />
+                    <img src={soc} alt='soc' className='w-[170px] h-auto xl:w-[130px] 2xl:w-[160px]' />
+                    <img src={iso} alt='iso' className='w-[220px] h-auto xl:w-[178px] 2xl:w-[220px]' />
+                </div>
+
+                {/* Trusted By Section */}
+                <div className='flex justify-center sm:text-start mt-10 md:mt-24 w-full xl:justify-start xl:ml-16'>
+                    <h3 className='text-[#333B52] text-[13px] md:text-[18.9px] 2xl:text-[18.9px] flex text-center'>Trusted by over Top AI companies of all size</h3>
+                </div>
+                <div className='lg:ml-14 md:mt-4 mt-10 mb-8 w-full xl:ml-5 2xl:ml-6 xl:px-2 2xl:px-0'>
+                    <div className='grid grid-cols-4 gap-x-0 sm:gap-x-10 xl:w-full xl:gap-x-0'>
+                        <img src={zoom} alt='zoom' className='' />
+                        <img src={reuters} alt='reuters' className='' />
+                        <img src={heineken} alt='heineken' className='' />
+                        <img src={reuters} alt='reuters' className='' />
+                    </div>
+                    <div className='grid grid-cols-4 gap-x-0 sm:gap-x-10 xl:gap-x-0'>
+                        <img src={zoom} alt='zoom' className='' />
+                        <img src={reuters} alt='reuters' className='' />
+                        <img src={heineken} alt='heineken' className='' />
+                        <img src={reuters} alt='reuters' className='' />
+                    </div>
+                </div>
+            </div>
+            <div className='right-container w-full'>
+                <div className='mt-20 flex items-center justify-center md:items-start md:justify-start w-full px-4 md:px-8'>
+                    <img src={logo} alt='company-logo' className='md:w-[200px] w-[140px]' />
+                </div>
+
+                {/* Step 1 */}
+                {currentStep === 1 && (
+                    <div className='w-full max-w-6xl mx-auto px-4 md:px-8'>
+                        <div className='flex flex-col items-center md:items-start mt-6 md:mt-20'>
+                            <h1 className='text-[22px] md:text-[28px] lg:text-[32px] text-center md:text-left w-full'>
+                                Customize your 30-Minute Demo
+                            </h1>
+                            <p className='text-[#727272] text-[16px] md:text-[20px] lg:text-[24px] font-normal text-center md:text-left w-full mt-2'>
+                                Setup your primary focus and customize the demo accordingly.
+                            </p>
+                        </div>
+                        <div className="w-full mt-14 flex flex-col items-start relative">
+                            {/* Progress Bar */}
+                            <ProgressBar bgcolor="#0066FF" progress={Math.round(progress)} height={9} />
+
+                            {/* Fixed Height Question and Options Container */}
+                            <div className="w-full max-h-[400px] md:max-h-[500px] flex flex-col items-center overflow-hidden">
+                                {currentQuestionIndex >= 0 && currentQuestionIndex < questionsData.length && (
+                                    <div
+                                        key={questionsData?.[currentQuestionIndex]?.id}
+                                        className="w-full flex flex-col items-center justify-start"
+                                        style={{ height: "100%" }} // Ensures consistent height
+                                    >
+                                        <motion.div
+                                            initial="hidden"
+                                            animate="visible"
+                                            variants={optionVariants}
+                                            className="delay-100 transition duration-150 ease-in-out w-full"
+                                        >
+                                            {questionsData[currentQuestionIndex] && (
+                                                <h2 className="font-semibold mb-2 text-start text-[16px] md:text-[22px] lg:text-[28px] text-[#000000] w-full">
+                                                    {questionsData[currentQuestionIndex].text} <StyledSpan>*</StyledSpan>
+                                                </h2>
+                                            )}
+                                        </motion.div>
+
+                                        {/* Scrollable Options Container */}
+                                        <div className="flex flex-wrap gap-4 md:gap-6 justify-start items-start w-full overflow-y-auto max-h-[250px]">
+                                            {questionsData[currentQuestionIndex]?.options?.map((option) => {
+                                                const isMultiSelect = questionsData[currentQuestionIndex]?.multiSelect || false;
+                                                const currentQuestionId = questionsData[currentQuestionIndex]?.id || 0;
+                                                const isSelected = isMultiSelect
+                                                    ? multiSelectAnswers[currentQuestionId]?.includes(option) || false
+                                                    : selectedAnswers[currentQuestionId] === option || false;
+
+                                                return (
+                                                    <motion.div
+                                                        key={option || "unknown-option"}
+                                                        initial="hidden"
+                                                        animate="visible"
+                                                        variants={optionVariants}
+                                                        className="delay-100 transition duration-150 ease-in-out"
+                                                    >
+                                                        <button
+                                                            className={`px-4 py-2 md:px-6 md:py-3 rounded-full border font-normal text-[14px] md:text-[16px] w-full max-w-[300px] text-center
+                                        ${isSelected ? "btn-option" : pendingAnswer?.option === option ? "btn-option" : "bg-[#F6F6F6]"}
+                                    `}
+                                                            onClick={() => handleAnswer(currentQuestionId, option)}
+                                                            disabled={pendingAnswer !== null && !isSelected && selectedAnswers[currentQuestionId]}
+                                                        >
+                                                            {option || "Option not available"}
+                                                        </button>
+                                                    </motion.div>
+                                                );
+                                            })}
+                                        </div>
+
+                                        {/* "Other" Input Field */}
+                                        {questionsData[currentQuestionIndex]?.id === 6 &&
+                                            selectedAnswers?.[6] === "Other (Please Specify)" && (
+                                                <div className="w-full mb-6">
+                                                    <input
+                                                        maxLength={100}
+                                                        type="text"
+                                                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#0066FF]"
+                                                        placeholder="Please specify your use case"
+                                                        value={otherText || ""}
+                                                        onChange={(e) => {
+                                                            handleOtherTextChange(e);
+                                                            setSelectedAnswers((prev) => ({
+                                                                ...prev,
+                                                                6: "Other (Please Specify)",
+                                                            }));
+                                                            setIsNextEnabled(true);
+                                                        }}
+                                                    />
+                                                </div>
+                                            )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Fixed Navigation Buttons */}
+                            <div className="w-full fixed bottom-0 left-0 py-4 flex justify-end gap-x-4 items-center px-6">
+                                <button
+                                    className={`btn-next1 flex gap-x-2 md:gap-x-6 md:w-48 w-42 text-[14px] items-center font-normal md:text-[16px] ${currentQuestionIndex === 0 ? 'opacity-50 cursor-not-allowed text-gray-400' : 'text-[#0066FF]'} font-semibold`}
+                                    onClick={handlePrevious}
+                                    disabled={currentQuestionIndex === 0}
+                                >
+                                    <img src={arrow} alt='arrow' /> Previous
+                                </button>
+
+                                <button
+                                    className={`btn-next flex gap-x-2 md:gap-x-6 items-center font-semibold text-[14px] md:text-[16px] ${!isCurrentQuestionAnswered() ? "opacity-50 cursor-not-allowed" : ""} font-semibold`}
+                                    onClick={handleNext}
+                                >
+                                    Next Step <img src={arrow} alt="arrow" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* <div className="w-full max-w-full flex flex-col items-center">
+                            <ProgressBar
+                                bgcolor="#0066FF"
+                                progress={Math.round(progress)}
+                                height={9}
+                            />
+                        </div>
+                        <div className="w-full mt-14 max-h-[400px] flex flex-col items-start">
+                            {currentQuestionIndex >= 0 && currentQuestionIndex < questionsData.length && (
+                                <div key={questionsData?.[currentQuestionIndex]?.id}
+                                    className="mb-6 flex flex-col items-center w-full">
+
+                                    <motion.div
+                                        initial="hidden"
+                                        animate="visible"
+                                        variants={optionVariants}
+                                        className="delay-100 transition duration-150 ease-in-out w-full"
+                                    >
+                                        {questionsData[currentQuestionIndex] && (
+                                            <h2 className="font-semibold mb-2 text-start text-[16px] md:text-[22px] lg:text-[28px] text-[#000000] w-full">
+                                                {questionsData[currentQuestionIndex].text} <StyledSpan>*</StyledSpan>
+                                            </h2>
+                                        )}
+                                    </motion.div>
+
+                                    <div className="flex flex-wrap gap-4 md:gap-6 justify-start items-start w-full my-6">
+                                        {questionsData[currentQuestionIndex]?.options?.map((option) => {
+                                            const isMultiSelect = questionsData[currentQuestionIndex]?.multiSelect || false;
+                                            const currentQuestionId = questionsData[currentQuestionIndex]?.id || 0;
+                                            const isSelected = isMultiSelect
+                                                ? multiSelectAnswers[currentQuestionId]?.includes(option) || false
+                                                : selectedAnswers[currentQuestionId] === option || false;
+
+                                            return (
+                                                <motion.div
+                                                    key={option || "unknown-option"}
+                                                    initial="hidden"
+                                                    animate="visible"
+                                                    variants={optionVariants}
+                                                    className="delay-100 transition duration-150 ease-in-out"
+                                                >
+                                                    <button
+                                                        className={`px-4 py-2 md:px-6 md:py-3 rounded-full border font-normal text-[14px] md:text-[16px] w-full max-w-[300px] text-center
+                                    ${isSelected ? "btn-option" : pendingAnswer?.option === option ? "btn-option" : "bg-[#F6F6F6]"}
+                                `}
+                                                        onClick={() => handleAnswer(currentQuestionId, option)}
+                                                        disabled={pendingAnswer !== null && !isSelected && selectedAnswers[currentQuestionId]}
+                                                    >
+                                                        {option || "Option not available"}
+                                                    </button>
+                                                </motion.div>
+                                            );
+                                        })}
+                                    </div>
+                                    {questionsData[currentQuestionIndex]?.id === 6 &&
+                                        selectedAnswers?.[6] === "Other (Please Specify)" && (
+                                            <div className="w-full mb-6">
+                                                <input
+                                                    maxLength={100}
+                                                    type="text"
+                                                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#0066FF]"
+                                                    placeholder="Please specify your use case"
+                                                    value={otherText || ""}
+                                                    onChange={(e) => {
+                                                        handleOtherTextChange(e);
+                                                        setSelectedAnswers((prev) => ({
+                                                            ...prev,
+                                                            6: "Other (Please Specify)",
+                                                        }));
+                                                        setIsNextEnabled(true);
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
+                                </div>
+                            )}
+                        </div> */}
+
+
+                        {/* <div className='w-full flex justify-end gap-x-4 items-center mt-10 py-2'>
+                            <button
+                                className={`btn-next1 flex gap-x-2 md:gap-x-6 md:w-48 w-42 text-[14px] items-center font-normal md:text-[16px] ${currentQuestionIndex === 0 ? 'opacity-50 cursor-not-allowed text-gray-400' : 'text-[#0066FF]'} font-semibold`}
+                                onClick={handlePrevious}
+                                disabled={currentQuestionIndex === 0}
+                            >
+                                <img src={arrow} alt='arrow' /> Previous
+                            </button>
+
+                            <button
+                                className={`btn-next flex gap-x-2 md:gap-x-6 items-center font-semibold text-[14px] md:text-[16px] ${!isCurrentQuestionAnswered() ? "opacity-50 cursor-not-allowed" : ""} font-semibold`}
+                                onClick={handleNext}
+                            >
+                                Next Step <img src={arrow} alt="arrow" />
+                            </button>
+                        </div> */}
+
+                    </div>
+                )}
+                {/* Step 2 */}
+                {currentStep === 2 && (
+                    <div className='flex items-center w-full flex-col md:items-start'>
+                        <div className='customise-container items-start flex flex-col md:px-10 mt-6 2xl:mt-12'>
+                            <h1 className='md:text-[32px] flex mx-auto md:ml-0'>Your Information</h1>
+                            <p className='text-[#727272] w-full md:text-start md:w-full md:text-[22px] lg:text-[24px] font-normal'>Please provide your information and schedule the demo seamlessly.</p>
+                        </div>
+                        <div className='flex flex-col md:flex-row m-0 md:m-10 w-11/12 space-y-4 md:space-y-0 md:space-x-14 lg:space-x-16 xl:space-x-14 mt-10 2xl:gap-x-4'>
+                            <div className='flex flex-col items-start w-full md:w-1/2'>
+                                <label>
+                                    First Name <StyledSpan>*</StyledSpan>
+                                </label>
+                                <input
+                                    maxLength={50}
+                                    className={`p-2 md:px-3 rounded-lg border w-full mt-2 focus:outline-none ${formErrors.firstName ? 'border-red-500' : 'border-[#465FF166]'}`}
+                                    type="text"
+                                    name="firstName"
+                                    value={formData.firstName}
+                                    onChange={handleInputChange}
+                                    autoComplete="off"
+                                    placeholder="Please enter your First Name"
+                                />
+                                {formErrors.firstName && (
+                                    <p className='text-red-500 text-sm mt-1'>{formErrors.firstName}</p>
+                                )}
+                            </div>
+                            <div className='flex flex-col items-start w-full md:w-1/2'>
+                                <label>
+                                    Last Name <StyledSpan>*</StyledSpan>
+                                </label>
+                                <input
+                                    maxLength={50}
+                                    className={`p-2 md:px-3 rounded-lg border w-full mt-2 focus:outline-none ${formErrors.lastName ? 'border-red-500' : 'border-[#465FF166]'}`}
+                                    type="text"
+                                    name="lastName"
+                                    value={formData.lastName}
+                                    onChange={handleInputChange}
+                                    autoComplete="off"
+                                    placeholder="Please enter your Last Name"
+                                />
+                                {formErrors.lastName && (
+                                    <p className='text-red-500 text-sm mt-1'>{formErrors.lastName}</p>
+                                )}
+                            </div>
+                        </div>
+                        <div className='flex flex-col md:flex-row mt-3 md:m-10 w-11/12 space-y-4 md:space-y-0 md:space-x-14 lg:space-x-16 xl:space-x-14 2xl:gap-x-4 md:mt-0'>
+                            <div className='flex flex-col items-start w-full md:w-1/2'>
+                                <label>
+                                    Business Email ID <StyledSpan>*</StyledSpan>
+                                </label>
+                                <input
+                                    className={`p-2 md:px-3 rounded-lg border w-full mt-2 focus:outline-none ${formErrors.email ? 'border-red-500' : 'border-[#465FF166]'}`}
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleInputChange}
+                                    autoComplete="off"
+                                    placeholder="Please enter your email id"
+                                />
+                                {formErrors.email && (
+                                    <p className='text-red-500 text-sm mt-1'>{formErrors.email}</p>
+                                )}
+                            </div>
+                            <div className='flex flex-col items-start w-full md:w-1/2'>
+                                <label>
+                                    Country <StyledSpan>*</StyledSpan>
+                                </label>
+                                <select
+                                    className={`scrollbar-hide p-2 py-3 md:px-2 w-full rounded-lg border mt-2 bg-white focus:outline-none text-black ${formErrors.country ? 'border-red-500' : 'border-[#465FF166]'}`}
+                                    name="country"
+                                    value={formData.country}
+                                    onChange={handleInputChange}
+                                >
+                                    <option value="" className='text-[#9C9AA5]'>Select your Country</option>
+                                    {countries.map((count) => (
+                                        <option key={count.value} value={count.value}>
+                                            {count.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                {formErrors.country && (
+                                    <p className='text-red-500 text-sm mt-1'>{formErrors.country}</p>
+                                )}
+                            </div>
+                        </div>
+                        <div className='flex flex-col w-11/12 gap-y-5 md:ml-10 md:gap-y-10 mt-5 md:mt-0'>
+                            <div className='flex flex-col items-start w-full md:w-full'>
+                                <label>
+                                    Industry Belongs To <StyledSpan>*</StyledSpan>
+                                </label>
+                                <select
+                                    className={`scrollbar-hide p-2 py-3 md:px-2 w-full rounded-lg border mt-2 bg-white focus:outline-none text-black ${formErrors.industry ? 'border-red-500' : 'border-[#465FF166]'}`}
+                                    name="industry"
+                                    value={formData.industry}
+                                    onChange={handleInputChange}
+                                >
+                                    <option value="" className='text-[#9C9AA5]'>Select your Industry type</option>
+                                    {IndustryList.map((ind) => (
+                                        <option key={ind.value} value={ind.value}>
+                                            {ind.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                {formErrors.industry && (
+                                    <p className='text-red-500 text-sm mt-1'>{formErrors.industry}</p>
+                                )}
+                            </div>
+                            <div className='flex flex-col items-start w-full md:w-full'>
+                                <label>
+                                    Department / Team <StyledSpan>*</StyledSpan>
+                                </label>
+                                <select
+                                    className={`p-2 py-3 md:px-2 w-full rounded-lg border mt-2 bg-white focus:outline-none text-black ${formErrors.department ? 'border-red-500' : 'border-[#465FF166]'}`}
+                                    name="department"
+                                    value={formData.department}
+                                    onChange={handleInputChange}
+                                >
+                                    <option value="" className='text-[#9C9AA5]'>Select your department/ team</option>
+                                    {dept.map((dept) => (
+                                        <option key={dept.value} value={dept.value}>
+                                            {dept.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                {formErrors.department && (
+                                    <p className='text-red-500 text-sm mt-1'>{formErrors.department}</p>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className='xl:fixed xl:bottom-0 xl:right-0 text-white mb-2 flex justify-end items-center mt-10 w-full xl:mt-0 md:mt-8 gap-x-3 lg:mr-4 px-2 xl:px-0 '>
+                            <button
+
+                                className={`btn-next1 flex gap-x-2 md:gap-x-6 md:w-48 w-42 items-center text-[14px] md:text-[16px] 2xl:text-[18px] font-semibold`}
+                                onClick={handlePreviousStep}
+                            >
+                                <img src={arrow} alt='arrow' /> Previous
+                            </button>
+                            <button
+
+                                className='btn-next flex gap-x-2 md:gap-x-6 items-center font-semibold text-[14px] md:text-[16px] 2xl:text-[18px]'
+                                onClick={handleNextStep}
+                            >
+                                Next Step <img src={arrow} alt='arrow' />
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Step 3 */}
+                {currentStep === 3 && (
+                    <div className='w-full'>
+                        <div className='customise-container items-start flex flex-col mt-6 md:mt-20'>
+                            <h1 className='md:text-[32px] flex mx-auto md:ml-[52px]'>Book Demo</h1>
+                            <p className='text-[#727272] flex md:ml-[52px] md:w-full md:text-[24px] font-normal mx-auto'>Please pick your suitable date and time slot for the demo.</p>
+                        </div>
+                        <div className='flex mt-10 items-center w-full'>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <div className={`flex flex-col md:flex-row items-center justify-between w-full mx-auto sm:ml-4 lg:ml-7 xl:ml-7 2xl:px-7 2xl:ml-0 ml-0}`}>
+                                    {isDesktop ? (
+                                        <DateCalendar
+                                            value={value}
+                                            onChange={(newValue) => setValue(newValue)}
+                                            disablePast
+                                            dayOfWeekFormatter={(date) => {
+                                                // Format the date using Day.js adapter
+                                                return date.format('ddd'); // 'dd' gives the first two letters of the weekday (e.g., 'Mo', 'Tu')
+                                            }}
+                                            className="w-full"
+                                            sx={{
+                                                width: {
+                                                    sm: '430px', // For tablets
+                                                    md: '550px', // For desktops
+                                                    // '2xl': '900px',
+                                                },
+                                                height: "650px",
+                                                '& .MuiPickersCalendarHeader-label': {
+                                                    paddingRight: "20px",
+                                                    fontSize: '24px !important',
+                                                    fontWeight: 'bold !important',
+                                                },
+                                                '& .MuiTypography-root.MuiTypography-caption.MuiDayCalendar-weekDayLabel': {
+                                                    //for weekdays mond,tu
+                                                    paddingX: "31px",
+                                                    color: '#333333 !important',
+                                                    fontSize: '16px !important',
+                                                    fontWeight: "600 !important",
+                                                },
+                                                '& .MuiDayCalendar-header': {
+                                                    marginX: "6px",
+                                                    fontWeight: 'bold !important',
+                                                    color: 'black !important',
+                                                    fontSize: '30px !important',
+                                                    display: 'grid',
+                                                    gridTemplateColumns: 'repeat(7, 1fr)',
+                                                    // textAlign: 'center',
+                                                },
+                                                '& .MuiDayCalendar-weekContainer': {
+                                                    paddingY: "2px",
+                                                    display: 'grid !important',
+                                                    gridTemplateColumns: 'repeat(7, 1fr) !important',
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center',
+                                                },
+                                                '& .MuiPickersDay-root': {
+                                                    // paddingY:"17px",
+                                                    fontSize: '18px',
+                                                    fontWeight: '!important',
+                                                    color: '#666666 !important', // (for dates color)
+                                                    display: 'flex',
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center',
+                                                    '&:hover': {
+                                                        backgroundColor: '#E6F2FF',
+                                                    },
+                                                },
+                                                '& .MuiPickersCalendarHeader-switchViewButton': {
+                                                    display: 'none',
+                                                },
+                                                '& .MuiPickersDay-root:not(.MuiPickersDay-weekend)': {
+                                                    marginX: '16px',
+                                                    marginY: '2px'
+                                                },
+                                                '& .MuiPickersArrowSwitcher-root': {
+                                                    marginRight: '110px',
+                                                    '@media (max-width: 768px)': { // Adjust this width for tablet breakpoints
+                                                        marginRight: "98px", // Reduced margin for tablet view
+                                                    },
+                                                },
+                                                '& .Mui-selected': {
+                                                    backgroundColor: '#FB3F4A !important',
+                                                    color: 'white !important',
+                                                    '&:hover': {
+                                                        backgroundColor: '#FF3333 !important',
+                                                    },
+                                                },
+                                            }
+                                            }
+                                        />
+
+
+                                    ) : (
+                                        <DateCalendar
+                                            disablePast
+                                            onChange={(newValue) => setValue(newValue)}
+                                            className="w-full"
+                                            sx={{
+                                                width: '280px',
+                                                height: '450px',
+                                                '& .MuiPickersDay-root': {
+                                                    marginX: '3px',
+                                                    color: '#666666 !important',
+                                                    fontWeight: '700 !important',
+                                                    '&:hover': {
+                                                        backgroundColor: '#E6F2FF',
+                                                    },
+                                                },
+                                                '& .MuiPickersCalendarHeader-switchViewButton': {
+                                                    display: 'none',
+                                                },
+                                                '& .MuiDayCalendar-header': {
+                                                    fontWeight: 'bold !important',
+                                                    color: '#666666 !important',
+                                                },
+                                                '& .MuiTypography-root.MuiTypography-caption.MuiDayCalendar-weekDayLabel': {
+                                                    color: '#333333 !important',
+                                                    fontSize: '12px !important',
+                                                    fontWeight: "700 !important",
+                                                },
+                                                '& .MuiPickersCalendarHeader-label': {
+                                                    //month names
+                                                    fontSize: '20px !important',
+                                                    fontWeight: 'bold !important',
+                                                },
+                                                '& .Mui-selected': {
+                                                    backgroundColor: '#FB3F4A !important',
+                                                    color: 'white !important',
+                                                    '&:hover': {
+                                                        backgroundColor: '#FF3333 !important',
+                                                    },
+                                                },
+                                            }}
+                                        />
+                                    )}
+                                    <div className="md:h-[280px] w-[2px] bg-gray-100 ml-12 md:ml-1 lg:ml-16 xl:ml-0 2xl:ml-0 "></div>
+                                    <div className='flex flex-col items-center w-11/12 md:w-4/12 lg:w-6/12 xl:w-4/12 2xl:w-5/12'>
+                                        <h2 className='text-[18px] lg:text-xl md:text-2xl font-semibold text-gray-700 mb-4 md:mb-3 mt-4 md:mt-0'>
+                                            Available Time Slots
+                                        </h2>
+                                        <div className='w-full max-w-[300px] flex flex-col'>
+                                            <div className='overflow-auto flex items-center justify-center mx-auto' >
+                                                <div style={getContainerStyles()}>
+                                                    {slots && slots.length > 0 ? (
+                                                        <div className='space-y-4 md:space-y-6 p-2'>
+                                                            {slots.map((time, index) => (
+                                                                <button
+                                                                    key={index}
+                                                                    className={`w-full py-2 md:py-3 text-center rounded-xl border hover:bg-[#093179] hover:text-white transition-colors duration-200 ${selectedSlot && selectedSlot.istTime === time.istTime
+                                                                        ? 'bg-[#093179] text-white'
+                                                                        : 'bg-white text-black'
+                                                                        }`}
+                                                                    onClick={() => handleSlotSelection(time)}
+                                                                >
+                                                                    {time.localTime}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <div className='text-center py-4 text-gray-500 w-full'>
+                                                            No time slots available
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </LocalizationProvider>
+
+                        </div>
+                        <div className='flex flex-col items-center md:items-start text-[18px] md:text-[16px] md:ml-10 mt-10 md:mt-16'>
+                            <p className='text-[#666666]'>Demo Scheduling</p>
+                            <p className='text-[#333333] font-medium md:text-[22px] text-[18px] '>
+                                {selectedSlot ? formatSelectedSlot(showDate, selectedSlot) : ''}
+                            </p>
+                            {selectedSlot && (
+                                <p className='text-[#333333] font-medium md:text-[16px] text-[14px] mt-1'>
+                                    Indian time: {getISTTimeDisplay(selectedSlot)}
+                                </p>
+                            )}
+                            <p className='text-[14px]'>Timezone: {userTimezone}</p>
+                        </div>
+                        <div className='xl:fixed xl:bottom-0 xl:right-0 text-white mb-2 flex justify-center items-center md:justify-end mt-10 md:-mt-4 gap-x-2 px-2 lg:mx-2'>
+                            <button
+                                className={`btn-next1 flex gap-x-2 md:gap-x-6 md:w-48 w-42 items-center text-[14px] md:text-[16px] 2xl:text-[18px] font-semibold`}
+                                onClick={handlePreviousStep}
+                            >
+                                <img src={arrow} alt='arrow' /> Previous
+                            </button>
+                            <button className='btn-next flex gap-x-2 md:gap-x-6 items-center font-semibold text-[13px] md:text-[16px] 2xl:text-[18px]'>
+                                Book Demo <img src={arrow} alt='arrow' />
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div >
+    )
+}
+
+export default BookDemo
+
+const optionVariants = {
+    hidden: { opacity: 0 },
+    visible: (index) => ({
+        opacity: 1,
+        x: 0,
+        transition: {
+            type: "tween",
+            ease: "easeInOut",
+            duration: 1.2,
+            delay: index * 0.15
+        }
+    })
+
+};
