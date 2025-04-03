@@ -273,206 +273,8 @@ const countries = [
     { value: "Zambia", label: "Zambia" },
     { value: "Zimbabwe", label: "Zimbabwe" },
 ];
-const countryTimezoneMap = {
-    Afghanistan: "GMT+4:30 Asia/Kabul",
-    Albania: "GMT+2:00 Europe/Tirane",
-    Algeria: "GMT+1:00 Africa/Algiers",
-    Andorra: "GMT+2:00 Europe/Andorra",
-    Angola: "GMT+1:00 Africa/Luanda",
-    "Antigua and Barbuda": "GMT-4:00 America/Antigua",
-    Argentina: "GMT-3:00 America/Argentina",
-    Armenia: "GMT+4:00 Asia/Yerevan",
-    Australia: "GMT+10:00 Australia/Sydney",
-    Austria: "GMT+2:00 Europe/Vienna",
-    Azerbaijan: "GMT+4:00 Asia/Baku",
-    Bahamas: "GMT-4:00 America/Nassau",
-    Bahrain: "GMT+3:00 Asia/Bahrain",
-    Bangladesh: "GMT+6:00 Asia/Dhaka",
-    Barbados: "GMT-4:00 America/Barbados",
-    Belarus: "GMT+3:00 Europe/Minsk",
-    Belgium: "GMT+2:00 Europe/Brussels",
-    Belize: "GMT-6:00 America/Belize",
-    Benin: "GMT+1:00 Africa/Porto-Novo",
-    Bhutan: "GMT+6:00 Asia/Thimphu",
-    Bolivia: "GMT-4:00 America/La_Paz",
-    "Bosnia and Herzegovina": "GMT+2:00 Europe/Sarajevo",
-    Botswana: "GMT+2:00 Africa/Gaborone",
-    Brazil: "GMT-3:00 America/Sao_Paulo",
-    Brunei: "GMT+8:00 Asia/Brunei",
-    Bulgaria: "GMT+3:00 Europe/Sofia",
-    "Burkina Faso": "GMT+0:00 Africa/Ouagadougou",
-    Burundi: "GMT+2:00 Africa/Bujumbura",
-    "Cabo Verde": "GMT-1:00 Atlantic/Cape_Verde",
-    Cambodia: "GMT+7:00 Asia/Phnom_Penh",
-    Cameroon: "GMT+1:00 Africa/Douala",
-    Canada: "GMT-4:00 America/Toronto",
-    "Central African Republic": "GMT+1:00 Africa/Bangui",
-    Chad: "GMT+1:00 Africa/Ndjamena",
-    Chile: "GMT-4:00 America/Santiago",
-    China: "GMT+8:00 Asia/Shanghai",
-    Colombia: "GMT-5:00 America/Bogota",
-    Comoros: "GMT+3:00 Indian/Comoro",
-    Congo: "GMT+1:00 Africa/Brazzaville",
-    "Costa Rica": "GMT-6:00 America/Costa_Rica",
-    Croatia: "GMT+2:00 Europe/Zagreb",
-    Cuba: "GMT-4:00 America/Havana",
-    Cyprus: "GMT+3:00 Asia/Nicosia",
-    "Czech Republic": "GMT+2:00 Europe/Prague",
-    Denmark: "GMT+2:00 Europe/Copenhagen",
-    Djibouti: "GMT+3:00 Africa/Djibouti",
-    Dominica: "GMT-4:00 America/Dominica",
-    "Dominican Republic": "GMT-4:00 America/Santo_Domingo",
-    Ecuador: "GMT-5:00 America/Guayaquil",
-    Egypt: "GMT+2:00 Africa/Cairo",
-    "El Salvador": "GMT-6:00 America/El_Salvador",
-    "Equatorial Guinea": "GMT+1:00 Africa/Malabo",
-    Eritrea: "GMT+3:00 Africa/Asmara",
-    Estonia: "GMT+3:00 Europe/Tallinn",
-    Eswatini: "GMT+2:00 Africa/Mbabane",
-    Ethiopia: "GMT+3:00 Africa/Addis_Ababa",
-    Fiji: "GMT+12:00 Pacific/Fiji",
-    Finland: "GMT+3:00 Europe/Helsinki",
-    France: "GMT+2:00 Europe/Paris",
-    Gabon: "GMT+1:00 Africa/Libreville",
-    Gambia: "GMT+0:00 Africa/Banjul",
-    Georgia: "GMT+4:00 Asia/Tbilisi",
-    Germany: "GMT+2:00 Europe/Berlin",
-    Ghana: "GMT+0:00 Africa/Accra",
-    Greece: "GMT+3:00 Europe/Athens",
-    Grenada: "GMT-4:00 America/Grenada",
-    Guatemala: "GMT-6:00 America/Guatemala",
-    Guinea: "GMT+0:00 Africa/Conakry",
-    "Guinea-Bissau": "GMT+0:00 Africa/Bissau",
-    Guyana: "GMT-4:00 America/Guyana",
-    Haiti: "GMT-4:00 America/Port-au-Prince",
-    Honduras: "GMT-6:00 America/Tegucigalpa",
-    Hungary: "GMT+2:00 Europe/Budapest",
-    Iceland: "GMT+0:00 Atlantic/Reykjavik",
-    India: "GMT+5:30 Asia/Kolkata",
-    Indonesia: "GMT+7:00 Asia/Jakarta",
-    Iran: "GMT+4:30 Asia/Tehran",
-    Iraq: "GMT+3:00 Asia/Baghdad",
-    Ireland: "GMT+1:00 Europe/Dublin",
-    Israel: "GMT+3:00 Asia/Jerusalem",
-    Italy: "GMT+2:00 Europe/Rome",
-    Jamaica: "GMT-5:00 America/Jamaica",
-    Japan: "GMT+9:00 Asia/Tokyo",
-    Jordan: "GMT+3:00 Asia/Amman",
-    Kazakhstan: "GMT+6:00 Asia/Almaty",
-    Kenya: "GMT+3:00 Africa/Nairobi",
-    Kiribati: "GMT+14:00 Pacific/Kiritimati",
-    "North Korea": "GMT+9:00 Asia/Pyongyang",
-    "South Korea": "GMT+9:00 Asia/Seoul",
-    Kosovo: "GMT+2:00 Europe/Belgrade",
-    Kuwait: "GMT+3:00 Asia/Kuwait",
-    Kyrgyzstan: "GMT+6:00 Asia/Bishkek",
-    Laos: "GMT+7:00 Asia/Vientiane",
-    Latvia: "GMT+3:00 Europe/Riga",
-    Lebanon: "GMT+3:00 Asia/Beirut",
-    Lesotho: "GMT+2:00 Africa/Maseru",
-    Liberia: "GMT+0:00 Africa/Monrovia",
-    Libya: "GMT+2:00 Africa/Tripoli",
-    Liechtenstein: "GMT+2:00 Europe/Vaduz",
-    Lithuania: "GMT+3:00 Europe/Vilnius",
-    Luxembourg: "GMT+2:00 Europe/Luxembourg",
-    Madagascar: "GMT+3:00 Indian/Antananarivo",
-    Malawi: "GMT+2:00 Africa/Blantyre",
-    Malaysia: "GMT+8:00 Asia/Kuala_Lumpur",
-    Maldives: "GMT+5:00 Indian/Maldives",
-    Mali: "GMT+0:00 Africa/Bamako",
-    Malta: "GMT+2:00 Europe/Malta",
-    "Marshall Islands": "GMT+12:00 Pacific/Majuro",
-    Mauritania: "GMT+0:00 Africa/Nouakchott",
-    Mauritius: "GMT+4:00 Indian/Mauritius",
-    Mexico: "GMT-5:00 America/Mexico_City",
-    Micronesia: "GMT+11:00 Pacific/Pohnpei",
-    Moldova: "GMT+3:00 Europe/Chisinau",
-    Monaco: "GMT+2:00 Europe/Monaco",
-    Mongolia: "GMT+8:00 Asia/Ulaanbaatar",
-    Montenegro: "GMT+2:00 Europe/Podgorica",
-    Morocco: "GMT+1:00 Africa/Casablanca",
-    Mozambique: "GMT+2:00 Africa/Maputo",
-    Myanmar: "GMT+6:30 Asia/Yangon",
-    Namibia: "GMT+2:00 Africa/Windhoek",
-    Nauru: "GMT+12:00 Pacific/Nauru",
-    Nepal: "GMT+5:45 Asia/Kathmandu",
-    Netherlands: "GMT+2:00 Europe/Amsterdam",
-    "New Zealand": "GMT+12:00 Pacific/Auckland",
-    Nicaragua: "GMT-6:00 America/Managua",
-    Niger: "GMT+1:00 Africa/Niamey",
-    Nigeria: "GMT+1:00 Africa/Lagos",
-    "North Macedonia": "GMT+2:00 Europe/Skopje",
-    Norway: "GMT+2:00 Europe/Oslo",
-    Oman: "GMT+4:00 Asia/Muscat",
-    Pakistan: "GMT+5:00 Asia/Karachi",
-    Palau: "GMT+9:00 Pacific/Palau",
-    Panama: "GMT-5:00 America/Panama",
-    "Papua New Guinea": "GMT+10:00 Pacific/Port_Moresby",
-    Paraguay: "GMT-4:00 America/Asuncion",
-    Peru: "GMT-5:00 America/Lima",
-    Philippines: "GMT+8:00 Asia/Manila",
-    Poland: "GMT+2:00 Europe/Warsaw",
-    Portugal: "GMT+0:00 Europe/Lisbon",
-    Qatar: "GMT+3:00 Asia/Qatar",
-    Romania: "GMT+3:00 Europe/Bucharest",
-    Russia: "GMT+3:00 Europe/Moscow",
-    Rwanda: "GMT+2:00 Africa/Kigali",
-    "Saint Kitts and Nevis": "GMT-4:00 America/St_Kitts",
-    "Saint Lucia": "GMT-4:00 America/St_Lucia",
-    "Saint Vincent and the Grenadines": "GMT-4:00 America/St_Vincent",
-    Samoa: "GMT+13:00 Pacific/Apia",
-    "San Marino": "GMT+2:00 Europe/San_Marino",
-    "Sao Tome and Principe": "GMT+0:00 Africa/Sao_Tome",
-    "Saudi Arabia": "GMT+3:00 Asia/Riyadh",
-    Senegal: "GMT+0:00 Africa/Dakar",
-    Serbia: "GMT+2:00 Europe/Belgrade",
-    Seychelles: "GMT+4:00 Indian/Mahe",
-    "Sierra Leone": "GMT+0:00 Africa/Freetown",
-    Singapore: "GMT+8:00 Asia/Singapore",
-    Slovakia: "GMT+2:00 Europe/Bratislava",
-    Slovenia: "GMT+2:00 Europe/Ljubljana",
-    "Solomon Islands": "GMT+11:00 Pacific/Guadalcanal",
-    Somalia: "GMT+3:00 Africa/Mogadishu",
-    "South Africa": "GMT+2:00 Africa/Johannesburg",
-    "South Sudan": "GMT+3:00 Africa/Juba",
-    Spain: "GMT+2:00 Europe/Madrid",
-    "Sri Lanka": "GMT+5:30 Asia/Colombo",
-    Sudan: "GMT+2:00 Africa/Khartoum",
-    Suriname: "GMT-3:00 America/Paramaribo",
-    Sweden: "GMT+2:00 Europe/Stockholm",
-    Switzerland: "GMT+2:00 Europe/Zurich",
-    Syria: "GMT+3:00 Asia/Damascus",
-    Taiwan: "GMT+8:00 Asia/Taipei",
-    Tajikistan: "GMT+5:00 Asia/Dushanbe",
-    Tanzania: "GMT+3:00 Africa/Dar_es_Salaam",
-    Thailand: "GMT+7:00 Asia/Bangkok",
-    "Timor-Leste": "GMT+9:00 Asia/Dili",
-    Togo: "GMT+0:00 Africa/Lome",
-    Tonga: "GMT+13:00 Pacific/Tongatapu",
-    "Trinidad and Tobago": "GMT-4:00 America/Port_of_Spain",
-    Tunisia: "GMT+1:00 Africa/Tunis",
-    Turkey: "GMT+3:00 Europe/Istanbul",
-    Turkmenistan: "GMT+5:00 Asia/Ashgabat",
-    Tuvalu: "GMT+12:00 Pacific/Funafuti",
-    Uganda: "GMT+3:00 Africa/Kampala",
-    Ukraine: "GMT+3:00 Europe/Kiev",
-    "United Arab Emirates": "GMT+4:00 Asia/Dubai",
-    "United Kingdom": "GMT+1:00 Europe/London",
-    "United States": "GMT-5:00 America/New_York",
-    Uruguay: "GMT-3:00 America/Montevideo",
-    Uzbekistan: "GMT+5:00 Asia/Tashkent",
-    Vanuatu: "GMT+11:00 Pacific/Efate",
-    "Vatican City": "GMT+2:00 Europe/Vatican",
-    Venezuela: "GMT-4:00 America/Caracas",
-    Vietnam: "GMT+7:00 Asia/Ho_Chi_Minh",
-    Yemen: "GMT+3:00 Asia/Aden",
-    Zambia: "GMT+2:00 Africa/Lusaka",
-    Zimbabwe: "GMT+2:00 Africa/Harare",
-}
 
 const BookDemo = () => {
-    const [userTimezone, setUserTimezone] = useState("GMT+5:30 India/Asia"); // Default to Indian timezone
-    const [timezoneOffset, setTimezoneOffset] = useState(0); // Difference in minutes between user timezone and IST
     var todayDate = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
     // console.log(todayDate);
     const isDesktop = useMediaQuery('(min-width:768px)');
@@ -660,8 +462,6 @@ const BookDemo = () => {
                 [name]: ''
             }));
         }
-
-        // Handle name validation
         if (name === 'firstName' || name === 'lastName') {
             const maxLength = 50;
             if (value.length >= maxLength) {
@@ -679,36 +479,6 @@ const BookDemo = () => {
             }
         }
 
-        // Set timezone when country is selected
-        if (name === 'country' && value) {
-            const selectedTimezone = countryTimezoneMap[value] || "GMT+5:30 India/Asia";
-            setUserTimezone(selectedTimezone);
-
-            // Calculate offset between IST and selected timezone
-            calculateTimezoneOffset(selectedTimezone);
-        }
-    };
-    const calculateTimezoneOffset = (timezoneString) => {
-        // Parse the GMT offset from the timezone string (e.g., "GMT+4:30 Asia/Kabul")
-        const gmtMatch = timezoneString.match(/GMT([+-])(\d+):(\d+)/);
-
-        if (!gmtMatch) {
-            setTimezoneOffset(0);
-            return;
-        }
-
-        const sign = gmtMatch[1] === '+' ? 1 : -1;
-        const hours = parseInt(gmtMatch[2]);
-        const minutes = parseInt(gmtMatch[3]);
-
-        // Calculate total minutes offset
-        const userOffset = sign * (hours * 60 + minutes);
-
-        // IST is GMT+5:30 = +330 minutes
-        const istOffset = 330;
-
-        // Difference between user timezone and IST
-        setTimezoneOffset(userOffset - istOffset);
     };
 
     const validateForm = () => {
@@ -752,31 +522,19 @@ const BookDemo = () => {
     const [slotslength, selectedSlotslength] = useState(0)
 
     const intervals = (startString, endString) => {
-        // These are in IST
-        const istStart = moment(startString, 'hh:mm a');
-        const istEnd = moment(endString, 'hh:mm a');
-
-        // Round to nearest 30 minutes
-        istStart.minutes(Math.ceil(istStart.minutes() / 30) * 30);
+        const start = moment(startString, 'hh:mm a');
+        const end = moment(endString, 'hh:mm a');
+        start.minutes(Math.ceil(start.minutes() / 30) * 30);
 
         const timeSlots = [];
 
-        while (istStart <= istEnd) {
-            // Convert IST time to user's local time
-            const localTime = moment(istStart).add(timezoneOffset, 'minutes');
-
-            timeSlots.push({
-                istTime: istStart.format('hh:mm a'), // Store original IST time
-                localTime: localTime.format('hh:mm a') // Display local time to user
-            });
-
-            // Clone the moment object before adding minutes to avoid modifying the original
-            istStart.add(30, 'minutes');
+        while (start <= end) {
+            timeSlots.push(start.format('hh:mm a'));
+            start.add(30, 'minutes');
         }
 
         return timeSlots;
     };
-
 
     // const date = new Date();
     // const formattedTime = new Intl.DateTimeFormat('en-US', {
@@ -789,78 +547,57 @@ const BookDemo = () => {
     const showDate = val.toDateString();
 
     const formatSelectedSlot = (date, slot) => {
-        if (!slot) return '';
-
-        const startTimeLocal = moment(slot.localTime, 'hh:mm A');
-        const endTimeLocal = moment(startTimeLocal).add(30, 'minutes');
-
-        const startTimeIST = moment(slot.istTime, 'hh:mm A');
-        const endTimeIST = moment(startTimeIST).add(30, 'minutes');
+        const startTime = moment(slot, 'hh:mm A');
+        const endTime = moment(startTime).add(30, 'minutes');
 
         const formattedDate = moment(date).format('Do MMMM YYYY');
-        const formattedStartTimeLocal = startTimeLocal.format('h:mmA');
-        const formattedEndTimeLocal = endTimeLocal.format('h:mmA');
+        const formattedStartTime = startTime.format('h:mmA');
+        const formattedEndTime = endTime.format('h:mmA');
 
-        const formattedStartTimeIST = startTimeIST.format('h:mmA');
-        const formattedEndTimeIST = endTimeIST.format('h:mmA');
-
-        return `${formattedDate} | ${formattedStartTimeLocal} - ${formattedEndTimeLocal} (${userTimezone})`;
-    };
-    const getISTTimeDisplay = (slot) => {
-        if (!slot) return '';
-
-        const startTimeIST = moment(slot.istTime, 'hh:mm A');
-        const endTimeIST = moment(startTimeIST).add(30, 'minutes');
-
-        const formattedStartTimeIST = startTimeIST.format('h:mmA');
-        const formattedEndTimeIST = endTimeIST.format('h:mmA');
-
-        return `${formattedStartTimeIST} - ${formattedEndTimeIST} (GMT+5:30 India/Asia)`;
+        return `${formattedDate} | ${formattedStartTime} - ${formattedEndTime}`;
     };
 
     useEffect(() => {
-        const selectedDay = val.getDay();
+        const selectedDay = val.getDay(); // Get the day of the week
+        const selectedDate = moment(val);
+        const currentTime = moment();
 
-        // Convert user's selected date to IST for comparison
-        const selectedDateLocal = moment(val);
-        const selectedDateIST = moment(selectedDateLocal).subtract(timezoneOffset, 'minutes');
-
-        // Current time in IST
-        const currentTimeIST = moment().utcOffset(330); // UTC+5:30 for IST
-
-        // Business hours in IST
-        const istStartOfDay = moment().utcOffset(330).set({ hour: 8, minute: 0, second: 0 });
-        const istEndOfDay = moment().utcOffset(330).set({ hour: 20, minute: 0, second: 0 });
+        //  const startOfDay = moment().set({ hour: 8, minute: 0, second: 0 }); 
+        const endOfDay = moment().set({ hour: 20, minute: 0, second: 0 }); // 8:00 PM
 
         const updateAvailableSlots = () => {
             let generatedSlots = [];
 
-            if (selectedDateIST.isSame(currentTimeIST, 'day')) {
-                // Today in IST timezone
-                if (currentTimeIST.isAfter(istEndOfDay)) {
+            if (selectedDate.isSame(currentTime, 'day')) {
+                // today and after
+                if (currentTime.isAfter(endOfDay)) {
                     setSlots([]);
                 } else {
-                    const formattedCurrentTimeIST = moment(currentTimeIST)
-                        .add(1 - (currentTimeIST.minute() % 30), 'minutes')
+                    const formattedCurrentTime = currentTime
+                        .add(1 - (currentTime.minute() % 30), 'minutes')
                         .format('hh:mm A');
-                    generatedSlots = intervals(formattedCurrentTimeIST, '08:00 PM');
+                    generatedSlots = intervals(formattedCurrentTime, '08:00 PM');
                 }
 
                 // Clear the selected slot if it's today and in the past
-                if (selectedSlot &&
-                    moment(selectedSlot.istTime, 'hh:mm A').isBefore(currentTimeIST)) {
+                if (
+                    selectedSlot &&
+                    moment(selectedSlot, 'hh:mm A').isBefore(currentTime)
+                ) {
                     setSelectedSlot(null);
                 }
             } else if (selectedDay === 0 || selectedDay === 6) {
-                // No slots for weekends
+                // no slots for weekends
                 setSlots([]);
             } else {
-                // For future days, generate slots for full business hours
+                // For future days generating slots
                 generatedSlots = intervals('08:00 AM', '08:00 PM');
             }
 
             setSlots(generatedSlots);
-            selectedSlotslength(generatedSlots.length);
+            selectedSlotslength(generatedSlots.length)
+            // console.log(slotslength)
+            // console.log(generatedSlots)
         };
 
         updateAvailableSlots();
@@ -870,12 +607,14 @@ const BookDemo = () => {
         }, 60000);
 
         return () => clearInterval(intervalId);
-    }, [val, selectedSlot, timezoneOffset]);
+    }, [val, selectedSlot]);
 
 
 
-    const handleSlotSelection = (slot) => {
-        setSelectedSlot(slot);
+    const handleSlotSelection = (time) => {
+        if (slots.includes(time)) {
+            setSelectedSlot(time);
+        }
     };
 
     const progress = currentQuestionIndex > 0
@@ -1398,13 +1137,13 @@ const BookDemo = () => {
                                                             {slots.map((time, index) => (
                                                                 <button
                                                                     key={index}
-                                                                    className={`w-full py-2 md:py-3 text-center rounded-xl border hover:bg-[#093179] hover:text-white transition-colors duration-200 ${selectedSlot && selectedSlot.istTime === time.istTime
+                                                                    className={`w-full py-2 md:py-3 text-center rounded-xl border hover:bg-[#093179] hover:text-white transition-colors duration-200 ${selectedSlot === time
                                                                         ? 'bg-[#093179] text-white'
                                                                         : 'bg-white text-black'
                                                                         }`}
                                                                     onClick={() => handleSlotSelection(time)}
                                                                 >
-                                                                    {time.localTime}
+                                                                    {time}
                                                                 </button>
                                                             ))}
                                                         </div>
@@ -1426,12 +1165,7 @@ const BookDemo = () => {
                             <p className='text-[#333333] font-medium md:text-[22px] text-[18px] '>
                                 {selectedSlot ? formatSelectedSlot(showDate, selectedSlot) : ''}
                             </p>
-                            {selectedSlot && (
-                                <p className='text-[#333333] font-medium md:text-[16px] text-[14px] mt-1'>
-                                    Developer's time: {getISTTimeDisplay(selectedSlot)}
-                                </p>
-                            )}
-                            <p className='text-[14px]'>Timezone: {userTimezone}</p>
+                            <p className='text-[14px]'>Timezone: GMT+5:30 India/Asia</p>
                         </div>
                         <div className='xl:fixed xl:bottom-0 xl:right-0 text-white mb-2 flex justify-center items-center md:justify-end mt-10 md:-mt-4 gap-x-2 px-2 lg:mx-2'>
                             <button
